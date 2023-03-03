@@ -58,6 +58,22 @@ tokenizeLine =
             [ describe "No interpolation"
                 [ test "|foo" <|
                     \() -> parses "| foo" [ Pts.Literal "foo" ]
+                , test "|bar" <|
+                    \() -> parses "|baroque \\bar \"beats the bartender" [ Pts.Literal "baroque \\bar \"beats the bartender" ]
+                ]
+            , describe "Variable substitution"
+                [ test "identifier after a $ is parsed as a variable" <|
+                    \() ->
+                        parses
+                            "| Welcome to the $product-name documentation! Are you still using $competitor in $year?"
+                            [ Pts.Literal "Welcome to the "
+                            , Pts.Identifier "product-name"
+                            , Pts.Literal " documentation! Are you still using "
+                            , Pts.Identifier "competitor"
+                            , Pts.Literal " in "
+                            , Pts.Identifier "year"
+                            , Pts.Literal "?"
+                            ]
                 ]
             ]
         ]

@@ -6,6 +6,7 @@ import Set exposing (Set)
 
 type Expr
     = StrE String
+    | NameE String
     | CallE String (List Expr)
 
 
@@ -30,6 +31,11 @@ char pred =
     P.getChompedString (P.chompIf pred)
         |> P.map (String.uncons >> Maybe.map Tuple.first)
         |> P.andThen (Maybe.map P.succeed >> Maybe.withDefault (P.problem "impossible"))
+
+
+anyChar : Parser Char
+anyChar =
+    char (always True)
 
 
 literalChar : P.Parser Char
@@ -88,9 +94,41 @@ codeLine =
         }
 
 
+validate : String -> (a -> Bool) -> Parser a -> Parser a
+validate desc pred =
+    P.andThen
+        (\a ->
+            if pred a then
+                P.succeed a
+
+            else
+                P.problem desc
+        )
+
+
+prosePiece : Parser Token
+prosePiece =
+    P.oneOf
+        [ P.succeed identity
+            |. char ((==) '$')
+            |= identifier
+            |> P.map Identifier
+        , P.getChompedString (P.chompUntilEndOr "$")
+            |> validate "expected something" (String.isEmpty >> not)
+            |> P.map Literal
+        ]
+
+
 proseLine : Parser (List Token)
 proseLine =
-    P.getSource |> P.map (\src -> [ Literal src ])
+    P.sequence
+        { start = ""
+        , separator = ""
+        , end = ""
+        , spaces = P.succeed ()
+        , item = prosePiece
+        , trailing = P.Optional
+        }
 
 
 sourceLine : String -> Result (List P.DeadEnd) (List Token)
