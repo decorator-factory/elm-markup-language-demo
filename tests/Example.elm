@@ -75,5 +75,24 @@ tokenizeLine =
                             , Pts.Literal "?"
                             ]
                 ]
+            , describe "Call interpolation"
+                [ test "One pair of parentheses" <|
+                    \() ->
+                        parses
+                            "| I am $(foo \"bar\" baz) and also $(hmmm heh)"
+                            [ Pts.Literal "I am "
+                            , Pts.LeftParen
+                            , Pts.Identifier "foo"
+                            , Pts.Literal "bar"
+                            , Pts.Identifier "baz"
+                            , Pts.RightParen
+                            , Pts.Literal " and also "
+                            , Pts.LeftParen
+                            , Pts.Identifier "hmmm"
+                            , Pts.Identifier "heh"
+                            , Pts.RightParen
+                            ]
+
+                ]
             ]
         ]

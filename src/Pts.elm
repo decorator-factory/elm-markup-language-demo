@@ -1,7 +1,7 @@
 module Pts exposing (..)
 
 import Parser as P exposing ((|.), (|=), Parser)
-import Set exposing (Set)
+import Set
 
 
 type Expr
@@ -106,16 +106,23 @@ validate desc pred =
         )
 
 
-prosePiece : Parser Token
+prosePiece : Parser (List Token)
 prosePiece =
     P.oneOf
-        [ P.succeed identity
-            |. char ((==) '$')
-            |= identifier
-            |> P.map Identifier
+        [ P.symbol "$$"
+            |> P.map (always [ Literal "$" ])
+        , P.succeed identity
+            |. P.symbol "$"
+            |= P.oneOf
+                [ identifier
+                    |> P.map (Identifier >> List.singleton)
+                , P.symbol "("
+                    |> P.andThen (always balancedParens)
+                    |> P.map ((::) LeftParen)
+                ]
         , P.getChompedString (P.chompUntilEndOr "$")
             |> validate "expected something" (String.isEmpty >> not)
-            |> P.map Literal
+            |> P.map (Literal >> List.singleton)
         ]
 
 
@@ -129,6 +136,48 @@ proseLine =
         , item = prosePiece
         , trailing = P.Optional
         }
+        |> P.map List.concat
+
+
+type Nat
+    = Zero
+    | Suc Nat
+
+
+type alias BpStep =
+    ( Nat, List Token )
+
+
+balancedParensHelp : BpStep -> Parser (P.Step BpStep (List Token))
+balancedParensHelp ( depth, acc ) =
+    P.succeed identity
+        |. P.spaces
+        |= P.oneOf
+            [ identifier
+                |> P.map Identifier
+                |> P.map (\tok -> P.Loop ( depth, tok :: acc ))
+            , literal
+                |> P.map Literal
+                |> P.map (\tok -> P.Loop ( depth, tok :: acc ))
+            , P.symbol "("
+                |> P.map (always <| P.Loop ( Suc depth, LeftParen :: acc ))
+            , P.symbol ")"
+                |> (case depth of
+                        Zero ->
+                            P.map (always <| P.Done (RightParen :: acc))
+
+                        Suc n ->
+                            P.map (always <| P.Loop ( n, RightParen :: acc ))
+                   )
+            ]
+
+
+balancedParens : Parser (List Token)
+balancedParens =
+    P.succeed identity
+        |. P.spaces
+        |= P.loop ( Zero, [] ) balancedParensHelp
+        |> P.map List.reverse
 
 
 sourceLine : String -> Result (List P.DeadEnd) (List Token)
