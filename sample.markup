@@ -1,4 +1,12 @@
 (article
+  (meta
+    | Adapted from: https://htdp.org
+    |
+    | CC BY-NC-ND (linked interpretation):
+    | > [y]ou are free to <..> copy and redistribute the material in any medium or format
+    | > Merely changing the format never creates a derivative`
+    )
+
   (col
     (row
       (para
