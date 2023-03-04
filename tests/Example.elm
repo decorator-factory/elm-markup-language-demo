@@ -8,8 +8,8 @@ import Test exposing (..)
 tokenizeLine : Test
 tokenizeLine =
     let
-        parses : String -> List Pts.Token -> Expectation
-        parses line expectedTokens =
+        parsesLine : String -> List Pts.Token -> Expectation
+        parsesLine line expectedTokens =
             case Pts.sourceLine line of
                 Ok actualTokens ->
                     actualTokens
@@ -22,31 +22,31 @@ tokenizeLine =
         [ describe "Code line"
             [ describe "No tokens"
                 [ test "empty" <|
-                    \() -> parses "" []
+                    \() -> parsesLine "" []
                 , test "whitespace" <|
-                    \() -> parses "               " []
+                    \() -> parsesLine "               " []
                 ]
             , describe "String literals"
                 [ describe "Simple double-quoted"
                     [ test "foo" <|
                         \() ->
-                            parses "\"foo\"" [ Pts.Literal "foo" ]
+                            parsesLine "\"foo\"" [ Pts.Literal "foo" ]
                     , test "foo bar baz" <|
                         \() ->
-                            parses "\"foo bar baz\"" [ Pts.Literal "foo bar baz" ]
+                            parsesLine "\"foo bar baz\"" [ Pts.Literal "foo bar baz" ]
                     ]
                 , describe "Several double-quoted"
                     [ test "foo, bar, baz" <|
                         \() ->
-                            parses "\"foo\" \"bar\" \"baz\"" [ Pts.Literal "foo", Pts.Literal "bar", Pts.Literal "baz" ]
+                            parsesLine "\"foo\" \"bar\" \"baz\"" [ Pts.Literal "foo", Pts.Literal "bar", Pts.Literal "baz" ]
                     ]
                 , describe "Escaped"
                     [ test "single" <|
                         \() ->
-                            parses "\"foo is a \\\"bar\\\"\"" [ Pts.Literal "foo is a \"bar\"" ]
+                            parsesLine "\"foo is a \\\"bar\\\"\"" [ Pts.Literal "foo is a \"bar\"" ]
                     , test "mixed" <|
                         \() ->
-                            parses
+                            parsesLine
                                 "\"foo is a \\\"bar\\\"\" ( \"\\\\yes\" "
                                 [ Pts.Literal "foo is a \"bar\"", Pts.LeftParen, Pts.Literal "\\yes" ]
                     ]
@@ -55,14 +55,14 @@ tokenizeLine =
         , describe "Prose line"
             [ describe "No interpolation"
                 [ test "|foo" <|
-                    \() -> parses "| foo" [ Pts.Literal "foo" ]
+                    \() -> parsesLine "| foo" [ Pts.Literal "foo" ]
                 , test "|bar" <|
-                    \() -> parses "|baroque \\bar \"beats the bartender" [ Pts.Literal "baroque \\bar \"beats the bartender" ]
+                    \() -> parsesLine "|baroque \\bar \"beats the bartender" [ Pts.Literal "baroque \\bar \"beats the bartender" ]
                 ]
             , describe "Variable substitution"
                 [ test "identifier after a $ is parsed as a variable" <|
                     \() ->
-                        parses
+                        parsesLine
                             "| Welcome to the $product-name documentation! Are you still using $competitor in $year?"
                             [ Pts.Literal "Welcome to the "
                             , Pts.Identifier "product-name"
@@ -76,7 +76,7 @@ tokenizeLine =
             , describe "Call interpolation"
                 [ test "One pair of parentheses" <|
                     \() ->
-                        parses
+                        parsesLine
                             "| I am $(foo \"bar\" baz) and also $(hmmm heh)"
                             [ Pts.Literal "I am "
                             , Pts.LeftParen
