@@ -1,4 +1,4 @@
-module Pts exposing (..)
+module Pts exposing (Expr(..), Token(..), sourceLine)
 
 import Parser as P exposing ((|.), (|=), Parser)
 import Set
@@ -33,11 +33,6 @@ char pred =
         |> P.andThen (Maybe.map P.succeed >> Maybe.withDefault (P.problem "impossible"))
 
 
-anyChar : Parser Char
-anyChar =
-    char (always True)
-
-
 literalChar : P.Parser Char
 literalChar =
     P.oneOf
@@ -70,16 +65,6 @@ oneToken =
             , identifier |> P.map Identifier
             , literal |> P.map Literal
             ]
-
-
-yep : a -> a -> a
-yep =
-    always
-
-
-nope : a -> a -> a
-nope =
-    always identity
 
 
 codeLine : Parser (List Token)
@@ -194,8 +179,3 @@ sourceLine line =
 
     else
         P.run codeLine trimmed
-
-
-pi : Float
-pi =
-    3.14
