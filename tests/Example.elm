@@ -58,6 +58,18 @@ tokenizeLine =
                     \() -> parsesLine "| foo" [ Pts.Literal "foo" ]
                 , test "|bar" <|
                     \() -> parsesLine "|baroque \\bar \"beats the bartender" [ Pts.Literal "baroque \\bar \"beats the bartender" ]
+                , test "empty" <|
+                    \() -> parsesLine "|" []
+                , test "1 space" <|
+                    \() -> parsesLine "| " []
+                , test "2 spaces" <|
+                    \() -> parsesLine "|  " []
+                , test "3 spaces" <|
+                    \() -> parsesLine "|   " []
+                , test "4 spaces" <|
+                    \() -> parsesLine "|    " []
+                , test "indentation is preserved" <|
+                    \() -> parsesLine "|     return False" [ Pts.Literal "    return False" ]
                 ]
             , describe "Variable substitution"
                 [ test "identifier after a $ is parsed as a variable" <|
