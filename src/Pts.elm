@@ -147,13 +147,15 @@ balancedParensHelp ( depth, acc ) =
             , P.symbol "("
                 |> P.map (always <| P.Loop ( Suc depth, LeftParen :: acc ))
             , P.symbol ")"
-                |> (case depth of
-                        Zero ->
-                            P.map (always <| P.Done (RightParen :: acc))
+                |> P.map
+                    (always <|
+                        case depth of
+                            Zero ->
+                                P.Done <| RightParen :: acc
 
-                        Suc n ->
-                            P.map (always <| P.Loop ( n, RightParen :: acc ))
-                   )
+                            Suc n ->
+                                P.Loop ( n, RightParen :: acc )
+                    )
             ]
 
 
