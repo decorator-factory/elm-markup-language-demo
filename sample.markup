@@ -64,8 +64,8 @@
           )
 
         (item
-          | The top half or DrRacket is called the $(italic "definitions area"). In this area, you create
-          | programs, which is called $(italic "editing"). As soon as you add a word or change something in
+          | The top half or DrRacket is called the $(term "definitions area"). In this area, you create
+          | programs, which is called $(term "editing"). As soon as you add a word or change something in
           | the definitions area, the $(italic "SAVE") button shows up in the top-left corner. When you
           | click $(italic "SAVE") for the first time, DrRacket asks you for the name of a file so that
           | it can store your program for good. Once your definitions area is associated with a file,
@@ -135,7 +135,7 @@
 
     (para
       | In BSL, every time you want to use a "calculator operation", you write down an opening
-      | parenthesis, the operation you wish to perform, say $(code "+), the numbers on which the
+      | parenthesis, the operation you wish to perform, say $(code "+"), the numbers on which the
       | operation should work (separated by spaces or even line breaks), and, finally, a closing
       | parenthesis. The items following the operation are called the $(term "operands").
       | Nested arithmetic means that you can use an expression for an operand, which is why
