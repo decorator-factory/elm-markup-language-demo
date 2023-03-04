@@ -1,5 +1,6 @@
-module Pts exposing (Expr(..), Token(..), sourceLine)
+module Pts exposing (Expr(..), Token(..), consumeExpr, sourceLine)
 
+import Json.Encode as Je
 import Parser as P exposing ((|.), (|=), Parser)
 import Set
 
@@ -15,6 +16,82 @@ type Token
     | RightParen
     | Identifier String
     | Literal String
+
+
+tokenRepr : Token -> String
+tokenRepr tok =
+    case tok of
+        LeftParen ->
+            "LeftParen"
+
+        RightParen ->
+            "RightParen"
+
+        Identifier s ->
+            "(Identifier " ++ Je.encode 0 (Je.string s) ++ ")"
+
+        Literal s ->
+            "(Literal " ++ Je.encode 0 (Je.string s) ++ ")"
+
+
+consumeExpr : List Token -> Result String ( Expr, List Token )
+consumeExpr tokens =
+    case tokens of
+        [] ->
+            Err "Unexpected end of input"
+
+        RightParen :: _ ->
+            Err "Unmatched )"
+
+        (Literal s) :: rest ->
+            Ok ( StrE s, rest )
+
+        (Identifier s) :: rest ->
+            Ok ( NameE s, rest )
+
+        LeftParen :: rest ->
+            parseCall rest
+
+
+parseCall : List Token -> Result String ( Expr, List Token )
+parseCall tokens =
+    case tokens of
+        [] ->
+            Err "unexpected EOI while parsing a call"
+
+        (Identifier fname) :: rest ->
+            parseCallArgs rest
+                |> Result.map
+                    (\( args, rem ) ->
+                        ( CallE fname args, rem )
+                    )
+
+        RightParen :: _ ->
+            Err "Empty lists are not allowed"
+
+        badToken :: _ ->
+            Err ("Expected a function name, got: " ++ tokenRepr badToken)
+
+
+parseCallArgs : List Token -> Result String ( List Expr, List Token )
+parseCallArgs tokens =
+    case tokens of
+        [] ->
+            Err "unexpected EOI while parsing call arguments"
+
+        RightParen :: rest ->
+            Ok ( [], rest )
+
+        rest ->
+            consumeExpr rest
+                |> Result.andThen
+                    (\( expr, rem1 ) ->
+                        parseCallArgs rem1
+                            |> Result.map
+                                (\( args, rem2 ) ->
+                                    ( expr :: args, rem2 )
+                                )
+                    )
 
 
 identifier : P.Parser String

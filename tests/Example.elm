@@ -5,6 +5,160 @@ import Pts
 import Test exposing (..)
 
 
+consumeExpr : Test
+consumeExpr =
+    describe "parseExprFromTokens"
+        [ describe "String literal"
+            [ test "string" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr [ Pts.Literal "foo" ])
+                        (Ok ( Pts.StrE "foo", [] ))
+            , test "string with extra stuff" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr
+                            [ Pts.Literal "foo"
+                            , Pts.RightParen
+                            , Pts.LeftParen
+                            , Pts.Identifier "hmm"
+                            ]
+                        )
+                        (Ok
+                            ( Pts.StrE "foo"
+                            , [ Pts.RightParen
+                              , Pts.LeftParen
+                              , Pts.Identifier "hmm"
+                              ]
+                            )
+                        )
+            ]
+        , describe "Name"
+            [ test "name" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr [ Pts.Identifier "foo" ])
+                        (Ok ( Pts.NameE "foo", [] ))
+            , test "string with extra stuff" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr
+                            [ Pts.Identifier "foo"
+                            , Pts.RightParen
+                            , Pts.LeftParen
+                            , Pts.Identifier "hmm"
+                            ]
+                        )
+                        (Ok
+                            ( Pts.NameE "foo"
+                            , [ Pts.RightParen
+                              , Pts.LeftParen
+                              , Pts.Identifier "hmm"
+                              ]
+                            )
+                        )
+            ]
+        , describe "Call"
+            [ test "empty" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr
+                            [ Pts.LeftParen
+                            , Pts.RightParen
+                            ]
+                        )
+                        (Err "Empty lists are not allowed")
+            , test "no args" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr
+                            [ Pts.LeftParen
+                            , Pts.Identifier "product-name"
+                            , Pts.RightParen
+                            , Pts.RightParen
+                            , Pts.Literal "heh"
+                            ]
+                        )
+                        (Ok
+                            ( Pts.CallE "product-name" []
+                            , [ Pts.RightParen
+                              , Pts.Literal "heh"
+                              ]
+                            )
+                        )
+            , test "1 arg" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr
+                            [ Pts.LeftParen
+                            , Pts.Identifier "reverse"
+                            , Pts.Literal "aibohphobia"
+                            , Pts.RightParen
+                            , Pts.RightParen
+                            , Pts.Literal "heh"
+                            ]
+                        )
+                        (Ok
+                            ( Pts.CallE "reverse" [ Pts.StrE "aibohphobia" ]
+                            , [ Pts.RightParen
+                              , Pts.Literal "heh"
+                              ]
+                            )
+                        )
+            , test "2 args" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr
+                            [ Pts.LeftParen
+                            , Pts.Identifier "concat"
+                            , Pts.Literal "foo"
+                            , Pts.Literal "bar"
+                            , Pts.RightParen
+                            , Pts.RightParen
+                            , Pts.Literal "heh"
+                            ]
+                        )
+                        (Ok
+                            ( Pts.CallE "concat" [ Pts.StrE "foo", Pts.StrE "bar" ]
+                            , [ Pts.RightParen
+                              , Pts.Literal "heh"
+                              ]
+                            )
+                        )
+            , test "nested args" <|
+                \() ->
+                    Expect.equal
+                        (Pts.consumeExpr
+                            [ Pts.LeftParen
+                            , Pts.Identifier "concat"
+                            , Pts.Literal "foo"
+                            , Pts.LeftParen
+                            , Pts.Identifier "concat"
+                            , Pts.Literal "bar"
+                            , Pts.Literal "fizz"
+                            , Pts.Literal "buzz"
+                            , Pts.RightParen
+                            , Pts.RightParen
+                            , Pts.Literal "heh"
+                            ]
+                        )
+                        (Ok
+                            ( Pts.CallE "concat"
+                                [ Pts.StrE "foo"
+                                , Pts.CallE "concat"
+                                    [ Pts.StrE "bar"
+                                    , Pts.StrE "fizz"
+                                    , Pts.StrE "buzz"
+                                    ]
+                                ]
+                            , [ Pts.Literal "heh"
+                              ]
+                            )
+                        )
+            ]
+        ]
+
+
 tokenizeLine : Test
 tokenizeLine =
     let
