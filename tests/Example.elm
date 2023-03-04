@@ -1,8 +1,6 @@
 module Example exposing (..)
 
 import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
-import Parser as P
 import Pts
 import Test exposing (..)
 
@@ -92,7 +90,6 @@ tokenizeLine =
                             , Pts.Identifier "heh"
                             , Pts.RightParen
                             ]
-
                 ]
             ]
         ]
