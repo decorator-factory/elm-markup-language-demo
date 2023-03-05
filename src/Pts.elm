@@ -1,4 +1,4 @@
-module Pts exposing (Expr(..), Token(..), consumeExpr, sourceLine)
+module Pts exposing (Expr(..), Token(..), consumeExpr, oneExpr, program, sourceLineP, tokenize)
 
 import Json.Encode as Je
 import Parser as P exposing ((|.), (|=), Parser)
@@ -16,6 +16,41 @@ type Token
     | RightParen
     | Identifier String
     | Literal String
+
+
+tokenize : P.Parser (List Token)
+tokenize =
+    P.loop []
+        (\prev ->
+            P.oneOf
+                [ P.end |> P.map (always (P.Done prev))
+                , sourceLineP |> P.map ((++) prev) |> P.map P.Loop
+                ]
+        )
+
+
+program : P.Parser Expr
+program =
+    P.succeed identity
+        |= oneExpr
+        |. P.end
+
+
+oneExpr : P.Parser Expr
+oneExpr =
+    tokenize
+        |> P.andThen
+            (\tokens ->
+                case consumeExpr tokens of
+                    Ok ( expr, [] ) ->
+                        P.succeed expr
+
+                    Ok ( _, _ ) ->
+                        P.problem "Got some extra tokens while parsing expression"
+
+                    Err err ->
+                        P.problem err
+            )
 
 
 tokenRepr : Token -> String
@@ -156,49 +191,41 @@ codeLine =
         }
 
 
-validate : String -> (a -> Bool) -> Parser a -> Parser a
-validate desc pred =
-    P.andThen
-        (\a ->
-            if pred a then
-                P.succeed a
-
-            else
-                P.problem desc
-        )
-
-
-prosePiece : Parser (List Token)
-prosePiece =
-    P.oneOf
-        [ P.symbol "$$"
-            |> P.map (always [ Literal "$" ])
-        , P.succeed identity
-            |. P.symbol "$"
-            |= P.oneOf
-                [ identifier
-                    |> P.map (Identifier >> List.singleton)
-                , P.symbol "("
-                    |> P.andThen (always balancedParens)
-                    |> P.map ((::) LeftParen)
-                ]
-        , P.getChompedString (P.chompUntilEndOr "$")
-            |> validate "expected something" (String.isEmpty >> not)
-            |> P.map (Literal >> List.singleton)
-        ]
-
-
 proseLine : Parser (List Token)
 proseLine =
-    P.sequence
-        { start = ""
-        , separator = ""
-        , end = ""
-        , spaces = P.succeed ()
-        , item = prosePiece
-        , trailing = P.Optional
-        }
-        |> P.map List.concat
+    P.loop []
+        (\ts ->
+            P.oneOf
+                [ P.end |> P.map (always (P.Done ts))
+                , P.symbol "\n" |> P.map (always (P.Done ts))
+                , P.symbol "$$"
+                    |> P.map (always [ Literal "$" ])
+                    |> P.map ((++) ts)
+                    |> P.map P.Loop
+                , P.succeed identity
+                    |. P.symbol "$"
+                    |= P.oneOf
+                        [ identifier
+                            |> P.map (Identifier >> List.singleton)
+                        , P.symbol "("
+                            |> P.andThen (always balancedParens)
+                            |> P.map ((::) LeftParen)
+                        ]
+                    |> P.map ((++) ts)
+                    |> P.map P.Loop
+                , P.getChompedString (P.chompWhile (\c -> c /= '$' && c /= '\n'))
+                    |> P.andThen
+                        (\s ->
+                            if s == "" then
+                                P.problem "bruh"
+
+                            else
+                                Debug.log ("1 " ++ s) <| P.succeed [ Literal s ]
+                        )
+                    |> P.map ((++) ts)
+                    |> P.map P.Loop
+                ]
+        )
 
 
 type Nat
@@ -244,17 +271,16 @@ balancedParens =
         |> P.map List.reverse
 
 
-sourceLine : String -> Result (List P.DeadEnd) (List Token)
-sourceLine line =
-    let
-        trimmed =
-            String.trim line
-    in
-    if String.startsWith "| " trimmed then
-        P.run proseLine (String.dropLeft 2 trimmed)
-
-    else if String.startsWith "|" trimmed then
-        P.run proseLine (String.dropLeft 1 trimmed)
-
-    else
-        P.run codeLine trimmed
+sourceLineP : P.Parser (List Token)
+sourceLineP =
+    P.succeed identity
+        |. P.spaces
+        |= P.oneOf
+            [ P.succeed identity
+                |. P.symbol "| "
+                |= proseLine
+            , P.succeed identity
+                |. P.symbol "|"
+                |= proseLine
+            , codeLine
+            ]

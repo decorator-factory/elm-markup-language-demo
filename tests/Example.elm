@@ -1,6 +1,7 @@
 module Example exposing (..)
 
 import Expect exposing (Expectation)
+import Parser
 import Pts
 import Test exposing (..)
 
@@ -164,7 +165,7 @@ tokenizeLine =
     let
         parsesLine : String -> List Pts.Token -> Expectation
         parsesLine line expectedTokens =
-            case Pts.sourceLine line of
+            case Parser.run Pts.sourceLineP line of
                 Ok actualTokens ->
                     actualTokens
                         |> Expect.equalLists expectedTokens
@@ -217,11 +218,9 @@ tokenizeLine =
                 , test "1 space" <|
                     \() -> parsesLine "| " []
                 , test "2 spaces" <|
-                    \() -> parsesLine "|  " []
+                    \() -> parsesLine "|  " [ Pts.Literal " " ]
                 , test "3 spaces" <|
-                    \() -> parsesLine "|   " []
-                , test "4 spaces" <|
-                    \() -> parsesLine "|    " []
+                    \() -> parsesLine "|   " [ Pts.Literal "  " ]
                 , test "indentation is preserved" <|
                     \() -> parsesLine "|     return False" [ Pts.Literal "    return False" ]
                 ]
