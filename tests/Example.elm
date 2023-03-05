@@ -13,23 +13,23 @@ consumeExpr =
             [ test "string" <|
                 \() ->
                     Expect.equal
-                        (Pts.consumeExpr [ Pts.Literal "foo" ])
-                        (Ok ( Pts.StrE "foo", [] ))
+                        (Pts.consumeExpr [ Pts.Literal Pts.zeroPos "foo" ])
+                        (Ok ( Pts.StrE Pts.zeroPos "foo", [] ))
             , test "string with extra stuff" <|
                 \() ->
                     Expect.equal
                         (Pts.consumeExpr
-                            [ Pts.Literal "foo"
-                            , Pts.RightParen
-                            , Pts.LeftParen
-                            , Pts.Identifier "hmm"
+                            [ Pts.Literal Pts.zeroPos "foo"
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "hmm"
                             ]
                         )
                         (Ok
-                            ( Pts.StrE "foo"
-                            , [ Pts.RightParen
-                              , Pts.LeftParen
-                              , Pts.Identifier "hmm"
+                            ( Pts.StrE Pts.zeroPos "foo"
+                            , [ Pts.RightParen Pts.zeroPos
+                              , Pts.LeftParen Pts.zeroPos
+                              , Pts.Identifier Pts.zeroPos "hmm"
                               ]
                             )
                         )
@@ -38,23 +38,23 @@ consumeExpr =
             [ test "name" <|
                 \() ->
                     Expect.equal
-                        (Pts.consumeExpr [ Pts.Identifier "foo" ])
-                        (Ok ( Pts.NameE "foo", [] ))
+                        (Pts.consumeExpr [ Pts.Identifier Pts.zeroPos "foo" ])
+                        (Ok ( Pts.NameE Pts.zeroPos "foo", [] ))
             , test "string with extra stuff" <|
                 \() ->
                     Expect.equal
                         (Pts.consumeExpr
-                            [ Pts.Identifier "foo"
-                            , Pts.RightParen
-                            , Pts.LeftParen
-                            , Pts.Identifier "hmm"
+                            [ Pts.Identifier Pts.zeroPos "foo"
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "hmm"
                             ]
                         )
                         (Ok
-                            ( Pts.NameE "foo"
-                            , [ Pts.RightParen
-                              , Pts.LeftParen
-                              , Pts.Identifier "hmm"
+                            ( Pts.NameE Pts.zeroPos "foo"
+                            , [ Pts.RightParen Pts.zeroPos
+                              , Pts.LeftParen Pts.zeroPos
+                              , Pts.Identifier Pts.zeroPos "hmm"
                               ]
                             )
                         )
@@ -64,26 +64,26 @@ consumeExpr =
                 \() ->
                     Expect.equal
                         (Pts.consumeExpr
-                            [ Pts.LeftParen
-                            , Pts.RightParen
+                            [ Pts.LeftParen Pts.zeroPos
+                            , Pts.RightParen Pts.zeroPos
                             ]
                         )
-                        (Err "Empty lists are not allowed")
+                        (Err "Empty lists are not allowed @(line: 1)(while parsing call at (line: 1))")
             , test "no args" <|
                 \() ->
                     Expect.equal
                         (Pts.consumeExpr
-                            [ Pts.LeftParen
-                            , Pts.Identifier "product-name"
-                            , Pts.RightParen
-                            , Pts.RightParen
-                            , Pts.Literal "heh"
+                            [ Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "product-name"
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.Literal Pts.zeroPos "heh"
                             ]
                         )
                         (Ok
-                            ( Pts.CallE "product-name" []
-                            , [ Pts.RightParen
-                              , Pts.Literal "heh"
+                            ( Pts.CallE Pts.zeroPos "product-name" []
+                            , [ Pts.RightParen Pts.zeroPos
+                              , Pts.Literal Pts.zeroPos "heh"
                               ]
                             )
                         )
@@ -91,18 +91,18 @@ consumeExpr =
                 \() ->
                     Expect.equal
                         (Pts.consumeExpr
-                            [ Pts.LeftParen
-                            , Pts.Identifier "reverse"
-                            , Pts.Literal "aibohphobia"
-                            , Pts.RightParen
-                            , Pts.RightParen
-                            , Pts.Literal "heh"
+                            [ Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "reverse"
+                            , Pts.Literal Pts.zeroPos "aibohphobia"
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.Literal Pts.zeroPos "heh"
                             ]
                         )
                         (Ok
-                            ( Pts.CallE "reverse" [ Pts.StrE "aibohphobia" ]
-                            , [ Pts.RightParen
-                              , Pts.Literal "heh"
+                            ( Pts.CallE Pts.zeroPos "reverse" [ Pts.StrE Pts.zeroPos "aibohphobia" ]
+                            , [ Pts.RightParen Pts.zeroPos
+                              , Pts.Literal Pts.zeroPos "heh"
                               ]
                             )
                         )
@@ -110,19 +110,19 @@ consumeExpr =
                 \() ->
                     Expect.equal
                         (Pts.consumeExpr
-                            [ Pts.LeftParen
-                            , Pts.Identifier "concat"
-                            , Pts.Literal "foo"
-                            , Pts.Literal "bar"
-                            , Pts.RightParen
-                            , Pts.RightParen
-                            , Pts.Literal "heh"
+                            [ Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "concat"
+                            , Pts.Literal Pts.zeroPos "foo"
+                            , Pts.Literal Pts.zeroPos "bar"
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.Literal Pts.zeroPos "heh"
                             ]
                         )
                         (Ok
-                            ( Pts.CallE "concat" [ Pts.StrE "foo", Pts.StrE "bar" ]
-                            , [ Pts.RightParen
-                              , Pts.Literal "heh"
+                            ( Pts.CallE Pts.zeroPos "concat" [ Pts.StrE Pts.zeroPos "foo", Pts.StrE Pts.zeroPos "bar" ]
+                            , [ Pts.RightParen Pts.zeroPos
+                              , Pts.Literal Pts.zeroPos "heh"
                               ]
                             )
                         )
@@ -130,29 +130,31 @@ consumeExpr =
                 \() ->
                     Expect.equal
                         (Pts.consumeExpr
-                            [ Pts.LeftParen
-                            , Pts.Identifier "concat"
-                            , Pts.Literal "foo"
-                            , Pts.LeftParen
-                            , Pts.Identifier "concat"
-                            , Pts.Literal "bar"
-                            , Pts.Literal "fizz"
-                            , Pts.Literal "buzz"
-                            , Pts.RightParen
-                            , Pts.RightParen
-                            , Pts.Literal "heh"
+                            [ Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "concat"
+                            , Pts.Literal Pts.zeroPos "foo"
+                            , Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "concat"
+                            , Pts.Literal Pts.zeroPos "bar"
+                            , Pts.Literal Pts.zeroPos "fizz"
+                            , Pts.Literal Pts.zeroPos "buzz"
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.Literal Pts.zeroPos "heh"
                             ]
                         )
                         (Ok
-                            ( Pts.CallE "concat"
-                                [ Pts.StrE "foo"
-                                , Pts.CallE "concat"
-                                    [ Pts.StrE "bar"
-                                    , Pts.StrE "fizz"
-                                    , Pts.StrE "buzz"
+                            ( Pts.CallE Pts.zeroPos
+                                "concat"
+                                [ Pts.StrE Pts.zeroPos "foo"
+                                , Pts.CallE Pts.zeroPos
+                                    "concat"
+                                    [ Pts.StrE Pts.zeroPos "bar"
+                                    , Pts.StrE Pts.zeroPos "fizz"
+                                    , Pts.StrE Pts.zeroPos "buzz"
                                     ]
                                 ]
-                            , [ Pts.Literal "heh"
+                            , [ Pts.Literal Pts.zeroPos "heh"
                               ]
                             )
                         )
@@ -185,57 +187,60 @@ tokenizeLine =
                 [ describe "Simple double-quoted"
                     [ test "foo" <|
                         \() ->
-                            parsesLine "\"foo\"" [ Pts.Literal "foo" ]
+                            parsesLine "\"foo\"" [ Pts.Literal Pts.zeroPos "foo" ]
                     , test "foo bar baz" <|
                         \() ->
-                            parsesLine "\"foo bar baz\"" [ Pts.Literal "foo bar baz" ]
+                            parsesLine "\"foo bar baz\"" [ Pts.Literal Pts.zeroPos "foo bar baz" ]
                     ]
                 , describe "Several double-quoted"
                     [ test "foo, bar, baz" <|
                         \() ->
-                            parsesLine "\"foo\" \"bar\" \"baz\"" [ Pts.Literal "foo", Pts.Literal "bar", Pts.Literal "baz" ]
+                            parsesLine "\"foo\" \"bar\" \"baz\"" [ Pts.Literal Pts.zeroPos "foo", Pts.Literal Pts.zeroPos "bar", Pts.Literal Pts.zeroPos "baz" ]
                     ]
                 , describe "Escaped"
                     [ test "single" <|
                         \() ->
-                            parsesLine "\"foo is a \\\"bar\\\"\"" [ Pts.Literal "foo is a \"bar\"" ]
+                            parsesLine "\"foo is a \\\"bar\\\"\"" [ Pts.Literal Pts.zeroPos "foo is a \"bar\"" ]
                     , test "mixed" <|
                         \() ->
                             parsesLine
                                 "\"foo is a \\\"bar\\\"\" ( \"\\\\yes\" "
-                                [ Pts.Literal "foo is a \"bar\"", Pts.LeftParen, Pts.Literal "\\yes" ]
+                                [ Pts.Literal Pts.zeroPos "foo is a \"bar\""
+                                , Pts.LeftParen Pts.zeroPos
+                                , Pts.Literal Pts.zeroPos "\\yes"
+                                ]
                     ]
                 ]
             ]
         , describe "Prose line"
             [ describe "No interpolation"
                 [ test "|foo" <|
-                    \() -> parsesLine "| foo" [ Pts.Literal "foo" ]
+                    \() -> parsesLine "| foo" [ Pts.Literal Pts.zeroPos "foo" ]
                 , test "|bar" <|
-                    \() -> parsesLine "|baroque \\bar \"beats the bartender" [ Pts.Literal "baroque \\bar \"beats the bartender" ]
+                    \() -> parsesLine "|baroque \\bar \"beats the bartender" [ Pts.Literal Pts.zeroPos "baroque \\bar \"beats the bartender" ]
                 , test "empty" <|
                     \() -> parsesLine "|" []
                 , test "1 space" <|
                     \() -> parsesLine "| " []
                 , test "2 spaces" <|
-                    \() -> parsesLine "|  " [ Pts.Literal " " ]
+                    \() -> parsesLine "|  " [ Pts.Literal Pts.zeroPos " " ]
                 , test "3 spaces" <|
-                    \() -> parsesLine "|   " [ Pts.Literal "  " ]
+                    \() -> parsesLine "|   " [ Pts.Literal Pts.zeroPos "  " ]
                 , test "indentation is preserved" <|
-                    \() -> parsesLine "|     return False" [ Pts.Literal "    return False" ]
+                    \() -> parsesLine "|     return False" [ Pts.Literal Pts.zeroPos "    return False" ]
                 ]
             , describe "Variable substitution"
                 [ test "identifier after a $ is parsed as a variable" <|
                     \() ->
                         parsesLine
                             "| Welcome to the $product-name documentation! Are you still using $competitor in $year?"
-                            [ Pts.Literal "Welcome to the "
-                            , Pts.Identifier "product-name"
-                            , Pts.Literal " documentation! Are you still using "
-                            , Pts.Identifier "competitor"
-                            , Pts.Literal " in "
-                            , Pts.Identifier "year"
-                            , Pts.Literal "?"
+                            [ Pts.Literal Pts.zeroPos "Welcome to the "
+                            , Pts.Identifier Pts.zeroPos "product-name"
+                            , Pts.Literal Pts.zeroPos " documentation! Are you still using "
+                            , Pts.Identifier Pts.zeroPos "competitor"
+                            , Pts.Literal Pts.zeroPos " in "
+                            , Pts.Identifier Pts.zeroPos "year"
+                            , Pts.Literal Pts.zeroPos "?"
                             ]
                 ]
             , describe "Call interpolation"
@@ -243,18 +248,27 @@ tokenizeLine =
                     \() ->
                         parsesLine
                             "| I am $(foo \"bar\" baz) and also $(hmmm heh)"
-                            [ Pts.Literal "I am "
-                            , Pts.LeftParen
-                            , Pts.Identifier "foo"
-                            , Pts.Literal "bar"
-                            , Pts.Identifier "baz"
-                            , Pts.RightParen
-                            , Pts.Literal " and also "
-                            , Pts.LeftParen
-                            , Pts.Identifier "hmmm"
-                            , Pts.Identifier "heh"
-                            , Pts.RightParen
+                            [ Pts.Literal Pts.zeroPos "I am "
+                            , Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "foo"
+                            , Pts.Literal Pts.zeroPos "bar"
+                            , Pts.Identifier Pts.zeroPos "baz"
+                            , Pts.RightParen Pts.zeroPos
+                            , Pts.Literal Pts.zeroPos " and also "
+                            , Pts.LeftParen Pts.zeroPos
+                            , Pts.Identifier Pts.zeroPos "hmmm"
+                            , Pts.Identifier Pts.zeroPos "heh"
+                            , Pts.RightParen Pts.zeroPos
                             ]
                 ]
             ]
+            , describe "Does not hang"
+                [ test "Case 1" <|
+                    \() -> parsesLine
+                        "foo bar)"
+                        [ Pts.Identifier Pts.zeroPos "foo"
+                        , Pts.Identifier Pts.zeroPos "bar"
+                        , Pts.RightParen Pts.zeroPos
+                        ]
+                ]
         ]
