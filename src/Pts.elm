@@ -246,7 +246,7 @@ proseLine =
                                             P.problem "bruh"
 
                                         else
-                                            Debug.log ("1 " ++ s) <| P.succeed [ Literal pos s ]
+                                            P.succeed [ Literal pos s ]
                                     )
                                 |> P.map ((++) ts)
                                 |> P.map P.Loop
@@ -297,7 +297,7 @@ balancedParensHelp ( depth, acc ) =
 balancedParens : Parser (List Token)
 balancedParens =
     P.succeed identity
-        |.  P.chompWhile ((==) ' ')
+        |. P.chompWhile ((==) ' ')
         |= P.loop ( Zero, [] ) balancedParensHelp
         |> P.map List.reverse
 
@@ -305,7 +305,7 @@ balancedParens =
 sourceLineP : P.Parser (List Token)
 sourceLineP =
     P.succeed identity
-        |.  P.chompWhile ((==) ' ')
+        |. P.chompWhile ((==) ' ')
         |= P.oneOf
             [ P.succeed identity
                 |. P.symbol "| "
