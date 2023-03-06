@@ -231,26 +231,6 @@ manyInlineFun name impl =
         )
 
 
-manyVisFunTagged : String -> (EvalContext -> String -> List Vis -> ( Vis, EvalContext )) -> Val
-manyVisFunTagged name impl =
-    FnVal
-        (builtinDebug name)
-        (\ctx callSite vals ->
-            case vals of
-                [] ->
-                    Err (WrongArgCount callSite)
-
-                x :: xs ->
-                    case x of
-                        StrVal _ s ->
-                            expectVisuals xs
-                                |> Result.map (\vs -> impl ctx s vs |> Tuple.mapFirst (VisVal callSite))
-
-                        _ ->
-                            Err (TypeMismatch callSite "Expected a string as the first argument")
-        )
-
-
 manyInlineFunTagged : String -> (String -> List Inline -> Inline) -> Val
 manyInlineFunTagged name impl =
     FnVal
