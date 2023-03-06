@@ -1,4 +1,15 @@
-module Pts exposing (Expr(..), Pos, Token(..), consumeExpr, oneExpr, program, sourceLineP, tokenize, zeroPos)
+module Pts exposing
+    ( Expr(..)
+    , Pos
+    , Token(..)
+    , consumeExpr
+    , oneExpr
+    , posRepr
+    , program
+    , sourceLineP
+    , tokenize
+    , zeroPos
+    )
 
 import Json.Encode as Je
 import Parser as P exposing ((|.), (|=), Parser)

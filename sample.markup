@@ -1,5 +1,5 @@
 (article
-  (meta
+  (comment
     | Adapted from: https://htdp.org
     |
     | CC BY-NC-ND (linked interpretation):
@@ -19,41 +19,61 @@
       )
 
       (aside
-        | Consider a quick look at $(link "on-teaching").
+        (para
+          | Consider a quick look at $(link "on-teaching" "On Teaching").
+          )
         ))
 
-    (para
-      | Now it is time to switch roles. Start DrRacket. Doing so brings up the window of
-      | $(link "/meet-drracket"). Select “Choose language” from the “Language” menu, which opens a dialog
-      | listing “Teaching Languages” for “How to Design Programs.” Choose “Beginning Student”
-      | (the Beginning Student Language, or BSL) and click $(italic "OK") to set up DrRacket.
-      | With this task completed, you can program, and the DrRacket software becomes the child.
-      | Start with the simplest of all calculations. You type $(code-block "(+ 1 1)")
-      | into the top part of DrRacket, click $(italic "RUN"), anda $(code "2") shows up in the bottom.
-      )
+    (col
+      (para
+        | Now it is time to switch roles. Start DrRacket. Doing so brings up the window of
+        | $(link "meet-drracket" "Meet DrRacket"). Select “Choose language” from the “Language” menu, which opens a dialog
+        | listing “Teaching Languages” for “How to Design Programs.” Choose “Beginning Student”
+        | (the Beginning Student Language, or BSL) and click $(italic "OK") to set up DrRacket.
+        | With this task completed, you can program, and the DrRacket software becomes the child.
+        | Start with the simplest of all calculations. You type
+        )
+
+      (code-block "(+ 1 1)")
+
+      (para
+        | into the top part of DrRacket, click $(italic "RUN"), and a $(code "2") shows up in the bottom.
+        ))
 
     (anchor "meet-drracket"
       (examine
         (image "https://htdp.org/2022-8-7/Book/drracket-plain.png")
-        (center "Meet DrRacket")))
+        (row
+          (col)
+          (col (italic "Meet DrRacket"))
+          (col)
+        )
+        ))
 
-    (para
-      | That's how simple programming is. You ask questions if DrRacket were a child, and
-      | DrRacket computes for you. You can also ask DrRacket to process several requests at once:
+    (col
+      (para
+        | That's how simple programming is. You ask questions if DrRacket were a child, and
+        | DrRacket computes for you. You can also ask DrRacket to process several requests at once:
+        )
       (code-block
         | (+ 2 2)
         | (* 3 3)
         | (- 4 2)
         | (/ 6 2)
         )
-      | After you click $(italic "RUN"), you see $(code "4 9 2 3") in the bottom half of DrRacket,
-      | which are the expected results.
+      (para
+        | After you click $(italic "RUN"), you see $(code "4 9 2 3") in the bottom half of DrRacket,
+        | which are the expected results.
+        )
       )
 
-    (para
-      | Let's slow down for a moment and introduce some words:
+    (col
+      (para
+        | Let's slow down for a moment and introduce some words:
+        )
+
       (bullet-list
-        (item
+        (para
           | The top half or DrRacket is called the $(term "definitions area"). In this area, you create
           | programs, which is called $(term "editing"). As soon as you add a word or change something in
           | the definitions area, the $(italic "SAVE") button shows up in the top-left corner. When you
@@ -63,7 +83,7 @@
           | the file.
           )
 
-        (item
+        (para
           | The top half or DrRacket is called the $(term "definitions area"). In this area, you create
           | programs, which is called $(term "editing"). As soon as you add a word or change something in
           | the definitions area, the $(italic "SAVE") button shows up in the top-left corner. When you
@@ -73,25 +93,29 @@
           | the file.
           )
 
-        (item
+        (para
           | $(italic "Programs") consist of (italic "expressions"). You have seen expressions in mathematics.
           | For now, an expression is either a plain number or something that starts with a left parenthesis
           | "(" and ends in a matching right parenthesis ")" $emdash which DrRacket rewards by shading the
           | area between the pair of parentheses.
           )
 
-        (item
-          | When you click $(italic "RUN"), DrRacket evaluates the expressions in the definitions area and
-          | shows their result in the $(term "interactions area"). Then, DrRacket, your faithful servant,
-          | awaits your commands at the $(term "prompt") (>). The appearance of the prompt signals that
-          | DrRacket is waiting for you to enter additional expressoins, which it then evaluates like
-          | those in the definitions area:
+        (col
+          (para
+            | When you click $(italic "RUN"), DrRacket evaluates the expressions in the definitions area and
+            | shows their result in the $(term "interactions area"). Then, DrRacket, your faithful servant,
+            | awaits your commands at the $(term "prompt") (>). The appearance of the prompt signals that
+            | DrRacket is waiting for you to enter additional expressoins, which it then evaluates like
+            | those in the definitions area:
+            )
           (code-block
             | > (+ 1 1)
             | 2
             )
-          | Enter an expression at the prompt, hit the "return" or "enter" key on your keyboard, and
-          | watch how DrRacket responds with the result. You can do so as often as you wish:
+          (para
+            | Enter an expression at the prompt, hit the "return" or "enter" key on your keyboard, and
+            | watch how DrRacket responds with the result. You can do so as often as you wish:
+            )
           (code-block
             | > (+ 2 2)
             | 4
@@ -119,31 +143,39 @@
       | "computer numbers", and you will then truly appreciate that DrRacket issues such warnings.
       )
 
-    (para
-      | By now you might be wondering whether DrRacket can add more than two numbers at once,
-      | and yes, it can! As a matter of fact, it can do it in two different ways:
+    (col
+      (para
+        | By now you might be wondering whether DrRacket can add more than two numbers at once,
+        | and yes, it can! As a matter of fact, it can do it in two different ways:
+        )
       (code-block
         | > (+ 2 (+ 3 4))
         | 9
         | > (+ 2 3 4)
         | 9
         )
-      | The first one is $(term "nested arithmetic"), as you know it from school. The second one is the
-      | $(term "BSL arithmetic"); and the latter is natural, because in this notation you always use
-      | parentheses to group operations and numbers together.
+      (para
+        | The first one is $(term "nested arithmetic"), as you know it from school. The second one is the
+        | $(term "BSL arithmetic"); and the latter is natural, because in this notation you always use
+        | parentheses to group operations and numbers together.
+        )
       )
 
-    (para
-      | In BSL, every time you want to use a "calculator operation", you write down an opening
-      | parenthesis, the operation you wish to perform, say $(code "+"), the numbers on which the
-      | operation should work (separated by spaces or even line breaks), and, finally, a closing
-      | parenthesis. The items following the operation are called the $(term "operands").
-      | Nested arithmetic means that you can use an expression for an operand, which is why
+    (col
+      (para
+        | In BSL, every time you want to use a "calculator operation", you write down an opening
+        | parenthesis, the operation you wish to perform, say $(code "+"), the numbers on which the
+        | operation should work (separated by spaces or even line breaks), and, finally, a closing
+        | parenthesis. The items following the operation are called the $(term "operands").
+        | Nested arithmetic means that you can use an expression for an operand, which is why
+        )
       (code-block
         | > (+ 2 (+ 3 4))
         | 9
         )
-      | is a fine program. You can do this as often as you wish:
+      (para
+        | is a fine program. You can do this as often as you wish:
+        )
       (code-block
         | > (+ 2 (+ (* 3 3) 4))
         | 15
@@ -153,7 +185,9 @@
         | 38
         |
         )
-      | There are no limits to nesting, except for your patience.
+      ( para
+        | There are no limits to nesting, except for your patience.
+        )
       )
 
   ))
