@@ -108,6 +108,7 @@ viewInline vis =
                 [ E.el
                     [ E.alignBottom
                     , E.centerX
+                    , E.paddingXY 8 0
                     ]
                     (viewInline top)
                 , E.el
@@ -121,6 +122,7 @@ viewInline vis =
                 , E.el
                     [ E.alignTop
                     , E.centerX
+                    , E.paddingXY 8 0
                     ]
                     (viewInline bottom)
                 ]
