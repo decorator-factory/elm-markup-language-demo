@@ -105,26 +105,6 @@ debugInfo val =
             d
 
 
-resultSeqHelp : List (() -> Result e a) -> List a -> Result e (List a)
-resultSeqHelp rs acc =
-    case rs of
-        [] ->
-            Ok acc
-
-        x :: xs ->
-            case x () of
-                Ok a ->
-                    resultSeqHelp xs (a :: acc)
-
-                Err e ->
-                    Err e
-
-
-resultSeq : List (() -> Result e a) -> Result e (List a)
-resultSeq rs =
-    resultSeqHelp rs [] |> Result.map List.reverse
-
-
 seqEval : EvalContext -> List Expr -> Result EvalError ( List Val, EvalContext )
 seqEval ctx exprs =
     case exprs of
@@ -171,83 +151,188 @@ evalInContext (EvalContext ctx) expr =
                     Err <| UnknownName (posDebug pos) funName
 
 
-expectVis : Val -> Result EvalError Vis
-expectVis val =
-    case val of
-        VisVal _ v ->
-            Ok v
 
+--- Argument parsing
+
+
+type alias Args =
+    ( List Val, DebugInfo )
+
+
+type ArgReaderError
+    = ArTooManyArgs
+    | ArTooFewArgs
+    | ArWrongArgType Int { expected : String }
+
+
+type alias ArgReader r =
+    Args -> Result ArgReaderError r
+
+
+arConst : a -> ArgReader a
+arConst a =
+    \_ -> Ok a
+
+
+arThen : (a -> ArgReader b) -> ArgReader a -> ArgReader b
+arThen fn ra =
+    \args -> ra args |> Result.andThen (\a -> fn a args)
+
+
+arMap : (a -> b) -> ArgReader a -> ArgReader b
+arMap fn =
+    arThen (fn >> arConst)
+
+
+arDone : a -> ArgReader a
+arDone result =
+    \( args, _ ) ->
+        case args of
+            [] ->
+                Ok result
+
+            _ ->
+                Err ArTooManyArgs
+
+
+bumpArgPos : ArgReaderError -> ArgReaderError
+bumpArgPos err =
+    case err of
+        ArWrongArgType pos details ->
+            ArWrongArgType (pos + 1) details
+
+        other ->
+            other
+
+
+arChomp : ReadOne a -> (a -> ArgReader b) -> ArgReader b
+arChomp parse next args =
+    case args of
+        ( first :: rest, cs ) ->
+            parse first
+                |> Result.andThen (\a -> next a ( rest, cs ))
+                |> Result.mapError bumpArgPos
+
+        ( [], _ ) ->
+            Err ArTooFewArgs
+
+
+arRest : ReadOne a -> ArgReader (List a)
+arRest parse args =
+    case args of
+        ( first :: rest, cs ) ->
+            parse first
+                |> Result.andThen (\a -> arRest parse ( rest, cs ) |> Result.map ((::) a))
+                |> Result.mapError bumpArgPos
+
+        ( [], _ ) ->
+            Ok []
+
+
+type alias ReadOne x =
+    Val -> Result ArgReaderError x
+
+
+aStr : ReadOne String
+aStr arg =
+    case arg of
+        StrVal _ s ->
+            Ok s
+
+        _ ->
+            Err (ArWrongArgType 0 { expected = "a string" })
+
+
+aVis : ReadOne Vis
+aVis arg =
+    case arg of
         StrVal _ s ->
             Ok (InlineVis (TextV s))
 
-        other ->
-            Err (TypeMismatch (debugInfo other) "Expected a Vis")
-
-
-expectInline : Val -> Result EvalError Inline
-expectInline vis =
-    case vis of
-        VisVal _ (InlineVis v) ->
+        VisVal _ v ->
             Ok v
 
+        _ ->
+            Err (ArWrongArgType 1 { expected = "a block or inline element" })
+
+
+aBlock : ReadOne Block
+aBlock arg =
+    case arg of
+        VisVal _ (BlockVis v) ->
+            Ok v
+
+        _ ->
+            Err (ArWrongArgType 1 { expected = "a block element" })
+
+
+anInline : ReadOne Inline
+anInline arg =
+    case arg of
         StrVal _ s ->
             Ok (TextV s)
 
-        other ->
-            Err (TypeMismatch (debugInfo other) "Expected an inline element")
+        VisVal _ (InlineVis v) ->
+            Ok v
+
+        _ ->
+            Err (ArWrongArgType 1 { expected = "an inline element" })
 
 
-expectVisuals : List Val -> Result EvalError (List Vis)
-expectVisuals exprs =
-    resultSeq (exprs |> List.map (\val () -> expectVis val))
+getCallSite : ArgReader DebugInfo
+getCallSite ( _, cs ) =
+    Ok cs
 
 
-expectInlines : List Val -> Result EvalError (List Inline)
-expectInlines exprs =
-    resultSeq (exprs |> List.map (\val () -> expectInline val))
+mapArError : DebugInfo -> ArgReaderError -> EvalError
+mapArError cs are =
+    case are of
+        ArTooFewArgs ->
+            WrongArgCount cs
+
+        ArTooManyArgs ->
+            WrongArgCount cs
+
+        ArWrongArgType argNum { expected } ->
+            TypeMismatch cs ("In argument " ++ String.fromInt argNum ++ ": expected " ++ expected)
+
+
+buildFn : String -> (Args -> Result ArgReaderError Val) -> Val
+buildFn name f =
+    FnVal
+        (builtinDebug name)
+        (\ctx cs args ->
+            f ( args, cs )
+                |> Result.mapError (mapArError cs)
+                |> Result.map (\v -> ( v, ctx ))
+        )
 
 
 
--- This is horrible and duplicated. I am sorry
+-- Some higher-level helpers
 
 
 manyBlockFun : String -> (List Vis -> Block) -> Val
 manyBlockFun name impl =
-    FnVal
-        (builtinDebug name)
-        (\ctx callSite vals ->
-            expectVisuals vals
-                |> Result.map (\vs -> ( VisVal callSite (BlockVis <| impl vs), ctx ))
+    buildFn name
+        (getCallSite
+            |> arThen
+                (\cs ->
+                    arRest aVis
+                        |> arMap (\vs -> VisVal cs (BlockVis <| impl vs))
+                )
         )
 
 
 manyInlineFun : String -> (List Inline -> Inline) -> Val
 manyInlineFun name impl =
-    FnVal
-        (builtinDebug name)
-        (\ctx callSite vals ->
-            expectInlines vals
-                |> Result.map (\vs -> ( VisVal callSite (InlineVis <| impl vs), ctx ))
-        )
-
-
-manyInlineFunTagged : String -> (String -> List Inline -> Inline) -> Val
-manyInlineFunTagged name impl =
-    FnVal
-        (builtinDebug name)
-        (\ctx callSite vals ->
-            case vals of
-                [] ->
-                    Err (WrongArgCount callSite)
-
-                x :: xs ->
-                    case x of
-                        StrVal _ s ->
-                            expectInlines xs
-                                |> Result.map (\vs -> ( VisVal callSite <| InlineVis <| impl s vs, ctx ))
-
-                        _ ->
-                            Err (TypeMismatch callSite "Expected a string as the first argument")
+    buildFn name
+        (getCallSite
+            |> arThen
+                (\cs ->
+                    arRest anInline
+                        |> arMap (\vs -> VisVal cs (InlineVis <| impl vs))
+                )
         )
 
 
@@ -275,11 +360,9 @@ defaultCtx =
                   , manyBlockFun "row" RowV
                   )
                 , ( "para"
-                  , FnVal
-                        (builtinDebug "para")
-                        (\ctx callSite vals ->
-                            expectInlines vals
-                                |> Result.map (\vs -> ( VisVal callSite (BlockVis <| ParagraphV vs), ctx ))
+                  , buildFn "para"
+                        (getCallSite
+                            |> arThen (\cs -> arRest anInline |> arMap (\vs -> VisVal cs (BlockVis <| ParagraphV vs)))
                         )
                   )
                 , ( "code"
@@ -297,57 +380,71 @@ defaultCtx =
                 , ( "aside"
                   , FnVal
                         (builtinDebug "aside")
-                        (\ctx callSite args ->
+                        (\ctx cs args ->
                             case args of
                                 [ VisVal _ (BlockVis b) ] ->
-                                    Ok ( VisVal callSite (BlockVis (AsideV b)), ctx )
+                                    Ok ( VisVal cs (BlockVis (AsideV b)), ctx )
 
                                 [ _ ] ->
-                                    Err (TypeMismatch callSite "Expected a block element")
+                                    Err (TypeMismatch cs "Expected a block element")
 
                                 _ ->
-                                    Err (WrongArgCount callSite)
+                                    Err (WrongArgCount cs)
                         )
                   )
                 , ( "anchor"
-                  , FnVal
-                        (builtinDebug "anchor")
-                        (\ctx callSite args ->
-                            case args of
-                                [ StrVal _ tag, VisVal _ (BlockVis b) ] ->
-                                    Ok ( VisVal callSite (BlockVis (AnchorV tag b)), ctx )
-
-                                [ _, _ ] ->
-                                    Err (TypeMismatch callSite "Expected a string and a block element")
-
-                                _ ->
-                                    Err (WrongArgCount callSite)
+                  , let
+                        impl cs anchor block =
+                            VisVal cs (BlockVis (AnchorV anchor block))
+                    in
+                    buildFn "anchor"
+                        (getCallSite
+                            |> arThen
+                                (\cs ->
+                                    arChomp aStr <|
+                                        \anchor ->
+                                            arChomp aBlock <|
+                                                \block ->
+                                                    arDone (impl cs anchor block)
+                                )
                         )
                   )
                 , ( "comment"
                   , FnVal
                         (builtinDebug "comment")
-                        (\ctx callSite _ -> Ok ( VisVal callSite NoneV, ctx ))
+                        (\ctx cs _ -> Ok ( VisVal cs NoneV, ctx ))
                   )
                 , ( "link"
-                  , manyInlineFunTagged "link" LinkV
+                  , let
+                        impl cs anchor vs =
+                            VisVal cs (InlineVis (LinkV anchor vs))
+                    in
+                    buildFn "link"
+                        (getCallSite
+                            |> arThen
+                                (\cs ->
+                                    arChomp aStr <|
+                                        \anchor ->
+                                            arRest anInline |> arMap (impl cs anchor)
+                                )
+                        )
                   )
                 , ( "image"
                   , FnVal
                         (builtinDebug "image")
-                        (\ctx callSite args ->
+                        (\ctx cs args ->
                             case args of
                                 [ StrVal _ s ] ->
-                                    Ok ( VisVal callSite (BlockVis (ImageV s)), ctx )
+                                    Ok ( VisVal cs (BlockVis (ImageV s)), ctx )
 
                                 [ _ ] ->
-                                    Err (TypeMismatch callSite "Expected a string for `image`")
+                                    Err (TypeMismatch cs "Expected a string for `image`")
 
                                 [] ->
-                                    Err (WrongArgCount callSite)
+                                    Err (WrongArgCount cs)
 
                                 _ ->
-                                    Err (WrongArgCount callSite)
+                                    Err (WrongArgCount cs)
                         )
                   )
                 ]
