@@ -11296,6 +11296,9 @@ var $author$project$LangInterpreter$ImageV = function (a) {
 var $author$project$LangInterpreter$InlineCodeV = function (a) {
 	return {$: 'InlineCodeV', a: a};
 };
+var $author$project$LangInterpreter$InlineSeq = function (a) {
+	return {$: 'InlineSeq', a: a};
+};
 var $author$project$LangInterpreter$InlineVis = function (a) {
 	return {$: 'InlineVis', a: a};
 };
@@ -11317,6 +11320,15 @@ var $author$project$LangInterpreter$StrVal = F2(
 	function (a, b) {
 		return {$: 'StrVal', a: a, b: b};
 	});
+var $author$project$LangInterpreter$SubscriptV = function (a) {
+	return {$: 'SubscriptV', a: a};
+};
+var $author$project$LangInterpreter$SuperscriptV = function (a) {
+	return {$: 'SuperscriptV', a: a};
+};
+var $author$project$LangInterpreter$TextV = function (a) {
+	return {$: 'TextV', a: a};
+};
 var $author$project$LangInterpreter$UnorderedListV = function (a) {
 	return {$: 'UnorderedListV', a: a};
 };
@@ -11355,9 +11367,6 @@ var $author$project$LangInterpreter$aStr = function (arg) {
 					{expected: 'a string'});
 			});
 	}
-};
-var $author$project$LangInterpreter$TextV = function (a) {
-	return {$: 'TextV', a: a};
 };
 var $author$project$LangInterpreter$anInline = function (arg) {
 	_v0$2:
@@ -11875,6 +11884,26 @@ var $author$project$LangInterpreter$defaultCtx = $author$project$LangInterpreter
 													$author$project$LangInterpreter$ImageV(url)));
 										})))))),
 					_Utils_Tuple2(
+					'cc',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'cc',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arRest($author$project$LangInterpreter$anInline),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$getCallSite,
+								$author$project$LangInterpreter$arConst(
+									F2(
+										function (cs, vs) {
+											return A2(
+												$author$project$LangInterpreter$VisVal,
+												cs,
+												$author$project$LangInterpreter$InlineVis(
+													$author$project$LangInterpreter$InlineSeq(vs)));
+										})))))),
+					_Utils_Tuple2(
 					'frac',
 					A2(
 						$author$project$LangInterpreter$buildFn,
@@ -11921,7 +11950,88 @@ var $author$project$LangInterpreter$defaultCtx = $author$project$LangInterpreter
 													$author$project$LangInterpreter$InlineVis(
 														$author$project$LangInterpreter$FractionV(
 															{bottom: bottom, scale: 1.0, top: top})));
-											})))))))
+											}))))))),
+					_Utils_Tuple2(
+					'sup',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'sup',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$anInline),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$anInline),
+								A2(
+									$author$project$LangInterpreter$arAnd,
+									$author$project$LangInterpreter$getCallSite,
+									$author$project$LangInterpreter$arConst(
+										F3(
+											function (cs, subject, detail) {
+												return A2(
+													$author$project$LangInterpreter$VisVal,
+													cs,
+													$author$project$LangInterpreter$InlineVis(
+														$author$project$LangInterpreter$SuperscriptV(
+															{detail: detail, subject: subject})));
+											}))))))),
+					_Utils_Tuple2(
+					'sub',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'sub',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$anInline),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$anInline),
+								A2(
+									$author$project$LangInterpreter$arAnd,
+									$author$project$LangInterpreter$getCallSite,
+									$author$project$LangInterpreter$arConst(
+										F3(
+											function (cs, subject, detail) {
+												return A2(
+													$author$project$LangInterpreter$VisVal,
+													cs,
+													$author$project$LangInterpreter$InlineVis(
+														$author$project$LangInterpreter$SubscriptV(
+															{detail: detail, subject: subject})));
+											}))))))),
+					_Utils_Tuple2(
+					'gr',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'gr',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arRest($author$project$LangInterpreter$anInline),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$getCallSite,
+								$author$project$LangInterpreter$arConst(
+									F2(
+										function (cs, vs) {
+											return A2(
+												$author$project$LangInterpreter$VisVal,
+												cs,
+												$author$project$LangInterpreter$InlineVis(
+													$author$project$LangInterpreter$InlineSeq(
+														$elm$core$List$concat(
+															_List_fromArray(
+																[
+																	_List_fromArray(
+																	[
+																		$author$project$LangInterpreter$TextV('(')
+																	]),
+																	vs,
+																	_List_fromArray(
+																	[
+																		$author$project$LangInterpreter$TextV(')')
+																	])
+																])))));
+										}))))))
 				]))
 	});
 var $author$project$LangInterpreter$UnknownName = F2(
@@ -14724,11 +14834,90 @@ var $mdgriffith$elm_ui$Element$scale = function (n) {
 			_Utils_Tuple3(n, n, 1)));
 };
 var $mdgriffith$elm_ui$Element$Font$underline = $mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.underline);
+var $author$project$Main$verticalAlignMiddle = $mdgriffith$elm_ui$Element$htmlAttribute(
+	A2($elm$html$Html$Attributes$style, 'vertical-align', 'middle'));
+var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
+var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
+var $mdgriffith$elm_ui$Internal$Model$MoveX = function (a) {
+	return {$: 'MoveX', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Flag$moveX = $mdgriffith$elm_ui$Internal$Flag$flag(25);
+var $mdgriffith$elm_ui$Element$moveLeft = function (x) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$TransformComponent,
+		$mdgriffith$elm_ui$Internal$Flag$moveX,
+		$mdgriffith$elm_ui$Internal$Model$MoveX(-x));
+};
+var $author$project$Main$viewSubSup = F3(
+	function (subject, sub, sup) {
+		return A2(
+			$mdgriffith$elm_ui$Element$paragraph,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$mdgriffith$elm_ui$Element$row,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$mdgriffith$elm_ui$Element$el,
+							_List_fromArray(
+								[$mdgriffith$elm_ui$Element$alignRight]),
+							subject),
+							A2(
+							$mdgriffith$elm_ui$Element$paragraph,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$mdgriffith$elm_ui$Element$column,
+									_List_fromArray(
+										[
+											$mdgriffith$elm_ui$Element$scale(0.75)
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$mdgriffith$elm_ui$Element$el,
+											_List_fromArray(
+												[
+													$mdgriffith$elm_ui$Element$height(
+													$mdgriffith$elm_ui$Element$fillPortion(1)),
+													$mdgriffith$elm_ui$Element$alignLeft,
+													$mdgriffith$elm_ui$Element$moveUp(12),
+													$mdgriffith$elm_ui$Element$moveLeft(2)
+												]),
+											sup),
+											A2(
+											$mdgriffith$elm_ui$Element$el,
+											_List_fromArray(
+												[
+													$mdgriffith$elm_ui$Element$height(
+													$mdgriffith$elm_ui$Element$fillPortion(1))
+												]),
+											$mdgriffith$elm_ui$Element$none),
+											A2(
+											$mdgriffith$elm_ui$Element$el,
+											_List_fromArray(
+												[
+													$mdgriffith$elm_ui$Element$height(
+													$mdgriffith$elm_ui$Element$fillPortion(1)),
+													$mdgriffith$elm_ui$Element$alignLeft,
+													$mdgriffith$elm_ui$Element$moveUp(12),
+													$mdgriffith$elm_ui$Element$moveLeft(2)
+												]),
+											sub)
+										]))
+								]))
+						]))
+				]));
+	});
 var $author$project$Main$viewInline = function (vis) {
 	switch (vis.$) {
 		case 'TextV':
 			var txt = vis.a;
-			return $mdgriffith$elm_ui$Element$text(' ' + (txt + ' '));
+			return $mdgriffith$elm_ui$Element$text(' ' + txt);
 		case 'InlineCodeV':
 			var vs = vis.a;
 			return A2(
@@ -14774,7 +14963,7 @@ var $author$project$Main$viewInline = function (vis) {
 						A2($elm$core$List$map, $author$project$Main$viewInline, vs)),
 					url: '#elm_vis__' + tag
 				});
-		default:
+		case 'FractionV':
 			var top = vis.a.top;
 			var bottom = vis.a.bottom;
 			var scale = vis.a.scale;
@@ -14783,8 +14972,7 @@ var $author$project$Main$viewInline = function (vis) {
 				_List_fromArray(
 					[
 						$mdgriffith$elm_ui$Element$spacing(4),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'vertical-align', 'middle')),
+						$author$project$Main$verticalAlignMiddle,
 						$mdgriffith$elm_ui$Element$scale(scale)
 					]),
 				_List_fromArray(
@@ -14792,7 +14980,11 @@ var $author$project$Main$viewInline = function (vis) {
 						A2(
 						$mdgriffith$elm_ui$Element$el,
 						_List_fromArray(
-							[$mdgriffith$elm_ui$Element$alignBottom, $mdgriffith$elm_ui$Element$centerX]),
+							[
+								$mdgriffith$elm_ui$Element$alignBottom,
+								$mdgriffith$elm_ui$Element$centerX,
+								A2($mdgriffith$elm_ui$Element$paddingXY, 8, 0)
+							]),
 						$author$project$Main$viewInline(top)),
 						A2(
 						$mdgriffith$elm_ui$Element$el,
@@ -14809,9 +15001,55 @@ var $author$project$Main$viewInline = function (vis) {
 						A2(
 						$mdgriffith$elm_ui$Element$el,
 						_List_fromArray(
-							[$mdgriffith$elm_ui$Element$alignTop, $mdgriffith$elm_ui$Element$centerX]),
+							[
+								$mdgriffith$elm_ui$Element$alignTop,
+								$mdgriffith$elm_ui$Element$centerX,
+								A2($mdgriffith$elm_ui$Element$paddingXY, 8, 0)
+							]),
 						$author$project$Main$viewInline(bottom))
 					]));
+		case 'SuperscriptV':
+			var subject = vis.a.subject;
+			var detail = vis.a.detail;
+			if (subject.$ === 'SubscriptV') {
+				var inner = subject.a;
+				return A3(
+					$author$project$Main$viewSubSup,
+					$author$project$Main$viewInline(inner.subject),
+					$author$project$Main$viewInline(inner.detail),
+					$author$project$Main$viewInline(detail));
+			} else {
+				var other = subject;
+				return A3(
+					$author$project$Main$viewSubSup,
+					$author$project$Main$viewInline(other),
+					$mdgriffith$elm_ui$Element$none,
+					$author$project$Main$viewInline(detail));
+			}
+		case 'SubscriptV':
+			var subject = vis.a.subject;
+			var detail = vis.a.detail;
+			if (subject.$ === 'SuperscriptV') {
+				var inner = subject.a;
+				return A3(
+					$author$project$Main$viewSubSup,
+					$author$project$Main$viewInline(inner.subject),
+					$author$project$Main$viewInline(detail),
+					$author$project$Main$viewInline(inner.detail));
+			} else {
+				var other = subject;
+				return A3(
+					$author$project$Main$viewSubSup,
+					$author$project$Main$viewInline(other),
+					$author$project$Main$viewInline(detail),
+					$mdgriffith$elm_ui$Element$none);
+			}
+		default:
+			var vs = vis.a;
+			return A2(
+				$mdgriffith$elm_ui$Element$paragraph,
+				_List_Nil,
+				A2($elm$core$List$map, $author$project$Main$viewInline, vs));
 	}
 };
 var $mdgriffith$elm_ui$Element$Border$widthXY = F2(
