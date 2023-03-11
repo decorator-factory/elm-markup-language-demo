@@ -141,6 +141,9 @@ viewInline vis =
                 other ->
                     viewSubSup (viewInline other) (viewInline detail) E.none
 
+        I.InlineSeq vs ->
+            E.paragraph [] <| List.map viewInline vs
+
 
 viewSubSup : E.Element msg -> E.Element msg -> E.Element msg -> E.Element msg
 viewSubSup subject sub sup =

@@ -12,6 +12,10 @@ Some vague properties that I'd like the language to eventually have:
 ## TODO:
 
 - [ ] Mathematical functions (parentheses, fractions, indices etc.)
+    - [X] proof of concept, works for simple stuff
+    - [ ] fix layout bug with using a fraction as a subscript/superscript
+    - [ ] generally make sub, sup & frac play better together
+
 - [ ] Better code editor, probably something with "custom elements" and CodeMirror 6
 - [ ] User-provided functions (macros?)
 
