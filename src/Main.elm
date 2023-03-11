@@ -78,7 +78,7 @@ viewInline : I.Inline -> E.Element msg
 viewInline vis =
     case vis of
         I.TextV txt ->
-            E.text (" " ++ txt ++ " ")
+            E.text (" " ++ txt)
 
         I.InlineCodeV vs ->
             E.paragraph
@@ -102,12 +102,13 @@ viewInline vis =
         I.FractionV { top, bottom, scale } ->
             E.column
                 [ E.spacing 4
-                , E.htmlAttribute (Html.Attributes.style "vertical-align" "middle") -- enormous hack
+                , verticalAlignMiddle
                 , E.scale scale
                 ]
                 [ E.el
                     [ E.alignBottom
                     , E.centerX
+                    , E.paddingXY 8 0
                     ]
                     (viewInline top)
                 , E.el
@@ -121,9 +122,58 @@ viewInline vis =
                 , E.el
                     [ E.alignTop
                     , E.centerX
+                    , E.paddingXY 8 0
                     ]
                     (viewInline bottom)
                 ]
+
+        I.SuperscriptV { subject, detail } ->
+            case subject of
+                I.SubscriptV inner ->
+                    viewSubSup (viewInline inner.subject) (viewInline inner.detail) (viewInline detail)
+
+                other ->
+                    viewSubSup (viewInline other) E.none (viewInline detail)
+
+        I.SubscriptV { subject, detail } ->
+            case subject of
+                I.SuperscriptV inner ->
+                    viewSubSup (viewInline inner.subject) (viewInline detail) (viewInline inner.detail)
+
+                other ->
+                    viewSubSup (viewInline other) (viewInline detail) E.none
+
+        I.InlineSeq vs ->
+            E.paragraph [] <| List.map viewInline vs
+
+
+viewSubSup : E.Element msg -> E.Element msg -> E.Element msg -> E.Element msg
+viewSubSup subject sub sup =
+    -- This is a bit of a mess! Let's think how to solve it later...
+    E.paragraph []
+        [ E.row []
+            [ E.el [ E.alignRight ] subject
+            , E.paragraph []
+                [ E.column [ E.scale 0.75 ]
+                    [ E.el
+                        [ E.height (E.fillPortion 1)
+                        , E.alignLeft
+                        , E.moveUp 12
+                        , E.moveLeft 2
+                        ]
+                        sup
+                    , E.el [ E.height (E.fillPortion 1) ] E.none
+                    , E.el
+                        [ E.height (E.fillPortion 1)
+                        , E.alignLeft
+                        , E.moveUp 12
+                        , E.moveLeft 2
+                        ]
+                        sub
+                    ]
+                ]
+            ]
+        ]
 
 
 viewBlock : I.Block -> E.Element msg
@@ -220,3 +270,15 @@ view { draft, result } =
             }
         , result |> unwrapVal |> viewVal
         ]
+
+
+
+--- Some utilities
+--
+-- a bit of a hack, but I haven't found a way to vertically align an inline-block
+-- inside of a paragraph line:
+
+
+verticalAlignMiddle : E.Attribute msg
+verticalAlignMiddle =
+    E.htmlAttribute (Html.Attributes.style "vertical-align" "middle")

@@ -64,6 +64,9 @@ type Inline
     | ItalicV (List Inline)
     | LinkV String (List Inline)
     | FractionV { top : Inline, bottom : Inline, scale : Float }
+    | SuperscriptV { subject : Inline, detail : Inline }
+    | SubscriptV { subject : Inline, detail : Inline }
+    | InlineSeq (List Inline)
 
 
 type Vis
@@ -443,6 +446,14 @@ defaultCtx =
                             |> arAnd (arChomp aStr)
                         )
                   )
+                , ( "cc"
+                  , buildFn "cc"
+                        (arConst
+                            (\cs vs -> VisVal cs (InlineVis (InlineSeq vs)))
+                            |> arAnd getCallSite
+                            |> arAnd (arRest anInline)
+                        )
+                  )
 
                 -- Math stuff
                 , ( "frac"
@@ -465,6 +476,36 @@ defaultCtx =
                             |> arAnd getCallSite
                             |> arAnd (arChomp anInline)
                             |> arAnd (arChomp anInline)
+                        )
+                  )
+                , ( "sup"
+                  , buildFn "sup"
+                        (arConst
+                            (\cs subject detail ->
+                                VisVal cs (InlineVis (SuperscriptV { subject = subject, detail = detail }))
+                            )
+                            |> arAnd getCallSite
+                            |> arAnd (arChomp anInline)
+                            |> arAnd (arChomp anInline)
+                        )
+                  )
+                , ( "sub"
+                  , buildFn "sub"
+                        (arConst
+                            (\cs subject detail ->
+                                VisVal cs (InlineVis (SubscriptV { subject = subject, detail = detail }))
+                            )
+                            |> arAnd getCallSite
+                            |> arAnd (arChomp anInline)
+                            |> arAnd (arChomp anInline)
+                        )
+                  )
+                , ( "gr"
+                  , buildFn "gr"
+                        (arConst
+                            (\cs vs -> VisVal cs (InlineVis <| InlineSeq <| List.concat [ [ TextV "(" ], vs, [ TextV ")" ] ]))
+                            |> arAnd getCallSite
+                            |> arAnd (arRest anInline)
                         )
                   )
                 ]
