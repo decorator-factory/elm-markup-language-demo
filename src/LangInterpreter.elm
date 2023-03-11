@@ -64,6 +64,8 @@ type Inline
     | ItalicV (List Inline)
     | LinkV String (List Inline)
     | FractionV { top : Inline, bottom : Inline, scale : Float }
+    | SuperscriptV { subject : Inline, detail : Inline }
+    | SubscriptV { subject : Inline, detail : Inline }
 
 
 type Vis
@@ -461,6 +463,28 @@ defaultCtx =
                         (arConst
                             (\cs top bottom ->
                                 VisVal cs (InlineVis (FractionV { top = top, bottom = bottom, scale = 1.0 }))
+                            )
+                            |> arAnd getCallSite
+                            |> arAnd (arChomp anInline)
+                            |> arAnd (arChomp anInline)
+                        )
+                  )
+                , ( "sup"
+                  , buildFn "sup"
+                        (arConst
+                            (\cs subject detail ->
+                                VisVal cs (InlineVis (SuperscriptV { subject = subject, detail = detail }))
+                            )
+                            |> arAnd getCallSite
+                            |> arAnd (arChomp anInline)
+                            |> arAnd (arChomp anInline)
+                        )
+                  )
+                , ( "sub"
+                  , buildFn "sub"
+                        (arConst
+                            (\cs subject detail ->
+                                VisVal cs (InlineVis (SubscriptV { subject = subject, detail = detail }))
                             )
                             |> arAnd getCallSite
                             |> arAnd (arChomp anInline)
