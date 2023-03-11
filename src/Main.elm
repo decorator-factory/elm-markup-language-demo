@@ -7,9 +7,9 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
-import Interpreter as I
+import LangInterpreter as I
 import Parser
-import Pts
+import LangParser
 
 
 type alias Model =
@@ -29,7 +29,7 @@ update : String -> Model -> Model
 update msg model =
     let
         expr =
-            Parser.run Pts.program msg
+            Parser.run LangParser.program msg
 
         document =
             expr |> Result.map (I.evalInContext I.defaultCtx)

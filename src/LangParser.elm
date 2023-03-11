@@ -1,4 +1,4 @@
-module Pts exposing
+module LangParser exposing
     ( Expr(..)
     , Pos
     , Token(..)
