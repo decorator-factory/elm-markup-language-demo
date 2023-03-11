@@ -408,6 +408,9 @@ defaultCtx =
                 , ( "italic"
                   , manyInlineFun "italic" ItalicV
                   )
+                , ( "bold"
+                  , manyInlineFun "bold" BoldV
+                  )
                 , ( "term"
                   , manyInlineFun "term" ItalicV
                   )
