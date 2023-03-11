@@ -1,15 +1,17 @@
 (article
   (def section
     (fun (%title)
-        (row
+      (row
         (col "")
         (col (bold %title))
         (col ""))))
 
-  (def two "Zwei")
+  (def two
+    "Zwei")
 
-  (def call-with-two (fun (%thing)
-    (%thing two)))
+  (def call-with-two
+    (fun (%thing)
+      (%thing two)))
 
   (section "Chapter 1")
   (para
