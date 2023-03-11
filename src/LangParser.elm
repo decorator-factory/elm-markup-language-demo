@@ -8,7 +8,7 @@ module LangParser exposing
     , program
     , sourceLineP
     , tokenize
-    , zeroPos
+    , zeroPos, exprPos
     )
 
 import Json.Encode as Je
@@ -24,6 +24,14 @@ type Expr
     = StrE Pos String
     | NameE Pos String
     | CallE Pos String (List Expr)
+
+
+exprPos : Expr -> Pos
+exprPos expr =
+    case expr of
+        StrE pos _ -> pos
+        NameE pos _ -> pos
+        CallE pos _ _ -> pos
 
 
 type Token
@@ -157,7 +165,7 @@ parseCallArgs tokens =
 identifier : P.Parser String
 identifier =
     P.variable
-        { start = Char.isLower
+        { start = \c -> Char.isLower c || c == '%'
         , inner = \c -> Char.isLower c || Char.isDigit c || c == '-'
         , reserved = Set.empty
         }

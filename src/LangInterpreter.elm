@@ -16,7 +16,8 @@ import LangParser exposing (Expr(..), Pos, Token(..))
 
 
 type DebugInfo
-    = UserExpr Pos
+    = InExpr Pos
+    | InUserFunction { name : String, origin : DebugInfo }
     | InBuiltin { name : String }
     | CallingFrom { func : DebugInfo, callSite : DebugInfo }
     | Missing
@@ -24,7 +25,7 @@ type DebugInfo
 
 posDebug : Pos -> DebugInfo
 posDebug pos =
-    UserExpr pos
+    InExpr pos
 
 
 builtinDebug : String -> DebugInfo
@@ -40,6 +41,7 @@ type EvalContext
 
 type EvalError
     = UnknownName DebugInfo String
+    | MacroError DebugInfo String
     | NotImplemented DebugInfo String
     | TooManyArgs ( Val, List Val ) DebugInfo
     | NotEnoughArgs Int DebugInfo
@@ -80,12 +82,13 @@ type Val
     | ListVal DebugInfo (List Val)
     | VisVal DebugInfo Vis
     | FnVal DebugInfo (EvalContext -> DebugInfo -> List Val -> Result EvalError ( Val, EvalContext ))
+    | MacroFnVal DebugInfo (EvalContext -> DebugInfo -> List Expr -> Result EvalError ( Val, EvalContext ))
 
 
 reprDebug : DebugInfo -> String
 reprDebug debug =
     case debug of
-        UserExpr pos ->
+        InExpr pos ->
             LangParser.posRepr pos
 
         InBuiltin { name } ->
@@ -93,6 +96,9 @@ reprDebug debug =
 
         CallingFrom { func, callSite } ->
             "While calling <" ++ reprDebug func ++ ">: " ++ reprDebug callSite
+
+        InUserFunction { name, origin } ->
+            "While calling function '" ++ name ++ "' defined at " ++ reprDebug origin
 
         Missing ->
             "<?>"
@@ -113,23 +119,67 @@ debugInfo val =
         FnVal d _ ->
             d
 
+        MacroFnVal d _ ->
+            d
 
-seqEval : EvalContext -> List Expr -> Result EvalError ( List Val, EvalContext )
-seqEval ctx exprs =
+
+type alias EvalFn =
+    EvalContext -> Expr -> Result EvalError ( Val, EvalContext )
+
+
+seqEval : EvalFn -> EvalContext -> List Expr -> Result EvalError ( List Val, EvalContext )
+seqEval eval ctx exprs =
     case exprs of
         [] ->
             Ok ( [], ctx )
 
         e :: es ->
-            case evalInContext ctx e of
+            case eval ctx e of
                 Ok ( val, newCtx ) ->
-                    seqEval newCtx es |> Result.map (Tuple.mapFirst ((::) val))
+                    seqEval eval newCtx es |> Result.map (Tuple.mapFirst ((::) val))
 
                 Err err ->
                     Err err
 
 
-evalInContext : EvalContext -> Expr -> Result EvalError ( Val, EvalContext )
+callFnByName : EvalFn -> EvalContext -> Pos -> String -> List Expr -> Result EvalError ( Val, EvalContext )
+callFnByName eval (EvalContext ctx) pos funName argExprs =
+    case Dict.get funName ctx.names of
+        Just fun ->
+            callFnByValue eval (EvalContext ctx) pos fun argExprs
+
+        Nothing ->
+            Err <| UnknownName (posDebug pos) funName
+
+
+callFnByValue : EvalFn -> EvalContext -> Pos -> Val -> List Expr -> Result EvalError ( Val, EvalContext )
+callFnByValue eval (EvalContext ctx) pos fun argExprs =
+    case fun of
+        StrVal debug s ->
+            case argExprs of
+                [] ->
+                    Ok ( StrVal debug s, EvalContext ctx )
+
+                _ ->
+                    -- TODO: use TooManyArgs?..
+                    Err <| TypeMismatch debug "Can only 'call' a string in a no-arguments form, like (dollar)"
+
+        FnVal _ run ->
+            case seqEval eval (EvalContext ctx) argExprs of
+                Ok ( vals, newCtx ) ->
+                    run newCtx (posDebug pos) vals
+
+                Err e ->
+                    Err e
+
+        MacroFnVal _ run ->
+            run (EvalContext ctx) (posDebug pos) argExprs
+
+        val ->
+            Err <| TypeMismatch (debugInfo val) "I only know how to call functions"
+
+
+evalInContext : EvalFn
 evalInContext (EvalContext ctx) expr =
     case expr of
         StrE pos str ->
@@ -144,29 +194,7 @@ evalInContext (EvalContext ctx) expr =
                     Err <| UnknownName (posDebug pos) name
 
         CallE pos funName argExprs ->
-            case Dict.get funName ctx.names of
-                Just (StrVal debug s) ->
-                    case argExprs of
-                        [] ->
-                            Ok ( StrVal debug s, EvalContext ctx )
-
-                        _ ->
-                            -- TODO: use TooManyArgs?..
-                            Err <| TypeMismatch debug "Can only 'call' a string in a no-arguments form, like (dollar)"
-
-                Just (FnVal _ run) ->
-                    case seqEval (EvalContext ctx) argExprs of
-                        Ok ( vals, newCtx ) ->
-                            run newCtx (posDebug pos) vals
-
-                        Err e ->
-                            Err e
-
-                Just val ->
-                    Err <| TypeMismatch (debugInfo val) "I only know how to call functions"
-
-                Nothing ->
-                    Err <| UnknownName (posDebug pos) funName
+            callFnByName evalInContext (EvalContext ctx) pos funName argExprs
 
 
 
@@ -511,5 +539,130 @@ defaultCtx =
                             |> arAnd (arRest anInline)
                         )
                   )
+
+                -- Function definitions
+                , ( "def"
+                  , let
+                        parseArg : Expr -> Result EvalError String
+                        parseArg expr =
+                            case expr of
+                                NameE pos name ->
+                                    if name |> String.startsWith "%" then
+                                        Ok (name |> String.slice 1 -1)
+
+                                    else
+                                        Err (MacroError (InExpr pos) "Expected argument name to start with %")
+
+                                other ->
+                                    Err (MacroError (InExpr <| LangParser.exprPos other) "Expected an argument name like %foo")
+
+                        parseArgs : List Expr -> Result EvalError (List String)
+                        parseArgs exprs =
+                            case exprs of
+                                e :: es ->
+                                    Result.map2
+                                        (::)
+                                        (parseArg e)
+                                        (parseArgs es)
+
+                                [] ->
+                                    Ok []
+                    in
+                    MacroFnVal
+                        (builtinDebug "def")
+                        (\(EvalContext defCtx) defCallSite argExprs ->
+                            case argExprs of
+                                [ CallE _ fnName argNamesExprs, body ] ->
+                                    let
+                                        newFn argNames =
+                                            FnVal
+                                                (InUserFunction { name = fnName, origin = defCallSite })
+                                                (\callCtx callSite argVals ->
+                                                    case zipExact argNames argVals of
+                                                        JustRight kvs ->
+                                                            evalWithReplacements (Dict.fromList kvs) callCtx body
+
+                                                        LeftOverflow ( _, names ) ->
+                                                            Err (NotEnoughArgs (List.length names) callSite)
+
+                                                        RightOverflow ( val, vals ) ->
+                                                            Err (TooManyArgs ( val, vals ) callSite)
+                                                )
+                                    in
+                                    parseArgs argNamesExprs
+                                        |> Result.map
+                                            (\argNames ->
+                                                ( VisVal defCallSite NoneV
+                                                , EvalContext { names = Dict.insert fnName (newFn argNames) defCtx.names }
+                                                )
+                                            )
+
+                                [ _, _ ] ->
+                                    Err (TypeMismatch defCallSite "Expected a form like (add x y) as the first argument")
+
+                                _ ->
+                                    Err (TypeMismatch defCallSite "Expected exactly two arguments")
+                        )
+                  )
                 ]
         }
+
+
+evalWithReplacements : Dict String Val -> EvalFn
+evalWithReplacements vars ctx expr =
+    case expr of
+        NameE _ name ->
+            if name |> String.startsWith "%" then
+                case Dict.get (name |> String.slice 1 -1) vars of
+                    Just val ->
+                        Ok ( val, ctx )
+
+                    Nothing ->
+                        evalInContext ctx expr
+
+            else
+                evalInContext ctx expr
+
+        StrE _ _ ->
+            evalInContext ctx expr
+
+        CallE pos funName argExprs ->
+            if funName |> String.startsWith "%" then
+                case Dict.get (funName |> String.slice 1 -1) vars of
+                    Just fun ->
+                        callFnByValue (evalWithReplacements vars) ctx pos fun argExprs
+
+                    Nothing ->
+                        evalInContext ctx expr
+
+            else
+                callFnByName (evalWithReplacements vars) ctx pos funName argExprs
+
+
+type ZipExact a b
+    = JustRight (List ( a, b ))
+    | LeftOverflow ( a, List a )
+    | RightOverflow ( b, List b )
+
+
+zipExact : List a -> List b -> ZipExact a b
+zipExact xl yl =
+    case ( xl, yl ) of
+        ( [], [] ) ->
+            JustRight []
+
+        ( x :: xr, [] ) ->
+            LeftOverflow ( x, xr )
+
+        ( [], y :: yr ) ->
+            RightOverflow ( y, yr )
+
+        ( x :: xr, y :: yr ) ->
+            case
+                zipExact xr yr
+            of
+                JustRight prev ->
+                    JustRight (( x, y ) :: prev)
+
+                other ->
+                    other
