@@ -562,6 +562,39 @@ defaultCtx =
                                     Err (MacroError callSite "Expected exactly 2 arguments: name and value")
                         )
                   )
+                , ( "defun"
+                  , MacroFnVal
+                        (builtinDebug "defun")
+                        (\ctx callSite defunArgExprs ->
+                            case defunArgExprs of
+                                [ CallE callPos funName argExprs, bodyExpr ] ->
+                                    case argExprs of
+                                        (NameE argNamesPos firstArg) :: restArgs ->
+                                            evalInContext ctx
+                                                (CallE callPos
+                                                    "def"
+                                                    [ NameE callPos funName
+                                                    , CallE callPos
+                                                        "fun"
+                                                        [ CallE argNamesPos firstArg restArgs
+                                                        , bodyExpr
+                                                        ]
+                                                    ]
+                                                )
+
+                                        _ :: _ ->
+                                            Err (MacroError (InExpr callPos) "Expected an argument name, like %foo")
+
+                                        [] ->
+                                            Err (MacroError callSite "If you don't want to take any arguments, use a 'def'")
+
+                                [ _, _ ] ->
+                                    Err (TypeMismatch callSite "Expected a form like (add %x %y) as the first argument to defun")
+
+                                _ ->
+                                    Err (TypeMismatch callSite "Expected exactly two arguments to defun")
+                        )
+                  )
                 , ( "fun"
                   , let
                         parseArg : Expr -> Result EvalError String
@@ -614,10 +647,10 @@ defaultCtx =
                                         |> Result.map (\argNames -> ( newFn argNames, defCtx ))
 
                                 [ _, _ ] ->
-                                    Err (TypeMismatch defCallSite "Expected a form like (add x y) as the first argument")
+                                    Err (TypeMismatch defCallSite "Expected a form like (%x %y) as the first argument to fun")
 
                                 _ ->
-                                    Err (TypeMismatch defCallSite "Expected exactly two arguments")
+                                    Err (TypeMismatch defCallSite "Expected exactly two arguments to fun")
                         )
                   )
                 ]
