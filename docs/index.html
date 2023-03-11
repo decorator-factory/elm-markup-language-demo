@@ -11274,6 +11274,13 @@ var $author$project$LangInterpreter$AsideV = function (a) {
 var $author$project$LangInterpreter$BlockVis = function (a) {
 	return {$: 'BlockVis', a: a};
 };
+var $author$project$LangInterpreter$BoldV = function (a) {
+	return {$: 'BoldV', a: a};
+};
+var $author$project$LangParser$CallE = F3(
+	function (a, b, c) {
+		return {$: 'CallE', a: a, b: b, c: c};
+	});
 var $author$project$LangInterpreter$CodeblockV = function (a) {
 	return {$: 'CodeblockV', a: a};
 };
@@ -11293,6 +11300,12 @@ var $author$project$LangInterpreter$FractionV = function (a) {
 var $author$project$LangInterpreter$ImageV = function (a) {
 	return {$: 'ImageV', a: a};
 };
+var $author$project$LangInterpreter$InExpr = function (a) {
+	return {$: 'InExpr', a: a};
+};
+var $author$project$LangInterpreter$InUserFunction = function (a) {
+	return {$: 'InUserFunction', a: a};
+};
 var $author$project$LangInterpreter$InlineCodeV = function (a) {
 	return {$: 'InlineCodeV', a: a};
 };
@@ -11309,7 +11322,23 @@ var $author$project$LangInterpreter$LinkV = F2(
 	function (a, b) {
 		return {$: 'LinkV', a: a, b: b};
 	});
+var $author$project$LangInterpreter$MacroError = F2(
+	function (a, b) {
+		return {$: 'MacroError', a: a, b: b};
+	});
+var $author$project$LangInterpreter$MacroFnVal = F2(
+	function (a, b) {
+		return {$: 'MacroFnVal', a: a, b: b};
+	});
+var $author$project$LangParser$NameE = F2(
+	function (a, b) {
+		return {$: 'NameE', a: a, b: b};
+	});
 var $author$project$LangInterpreter$NoneV = {$: 'NoneV'};
+var $author$project$LangInterpreter$NotEnoughArgs = F2(
+	function (a, b) {
+		return {$: 'NotEnoughArgs', a: a, b: b};
+	});
 var $author$project$LangInterpreter$ParagraphV = function (a) {
 	return {$: 'ParagraphV', a: a};
 };
@@ -11329,6 +11358,14 @@ var $author$project$LangInterpreter$SuperscriptV = function (a) {
 var $author$project$LangInterpreter$TextV = function (a) {
 	return {$: 'TextV', a: a};
 };
+var $author$project$LangInterpreter$TooManyArgs = F2(
+	function (a, b) {
+		return {$: 'TooManyArgs', a: a, b: b};
+	});
+var $author$project$LangInterpreter$TypeMismatch = F2(
+	function (a, b) {
+		return {$: 'TypeMismatch', a: a, b: b};
+	});
 var $author$project$LangInterpreter$UnorderedListV = function (a) {
 	return {$: 'UnorderedListV', a: a};
 };
@@ -11576,18 +11613,6 @@ var $author$project$LangInterpreter$builtinDebug = function (name) {
 	return $author$project$LangInterpreter$InBuiltin(
 		{name: name});
 };
-var $author$project$LangInterpreter$NotEnoughArgs = F2(
-	function (a, b) {
-		return {$: 'NotEnoughArgs', a: a, b: b};
-	});
-var $author$project$LangInterpreter$TooManyArgs = F2(
-	function (a, b) {
-		return {$: 'TooManyArgs', a: a, b: b};
-	});
-var $author$project$LangInterpreter$TypeMismatch = F2(
-	function (a, b) {
-		return {$: 'TypeMismatch', a: a, b: b};
-	});
 var $author$project$LangInterpreter$mapArError = F2(
 	function (cs, are) {
 		switch (are.$) {
@@ -11640,6 +11665,240 @@ var $author$project$LangInterpreter$buildFn = F2(
 									1))));
 				}));
 	});
+var $author$project$LangInterpreter$UnknownName = F2(
+	function (a, b) {
+		return {$: 'UnknownName', a: a, b: b};
+	});
+var $author$project$LangInterpreter$debugInfo = function (val) {
+	switch (val.$) {
+		case 'StrVal':
+			var d = val.a;
+			return d;
+		case 'ListVal':
+			var d = val.a;
+			return d;
+		case 'VisVal':
+			var d = val.a;
+			return d;
+		case 'FnVal':
+			var d = val.a;
+			return d;
+		default:
+			var d = val.a;
+			return d;
+	}
+};
+var $author$project$LangInterpreter$posDebug = function (pos) {
+	return $author$project$LangInterpreter$InExpr(pos);
+};
+var $author$project$LangInterpreter$seqEval = F3(
+	function (_eval, ctx, exprs) {
+		if (!exprs.b) {
+			return $elm$core$Result$Ok(
+				_Utils_Tuple2(_List_Nil, ctx));
+		} else {
+			var e = exprs.a;
+			var es = exprs.b;
+			var _v1 = A2(_eval, ctx, e);
+			if (_v1.$ === 'Ok') {
+				var _v2 = _v1.a;
+				var val = _v2.a;
+				var newCtx = _v2.b;
+				return A2(
+					$elm$core$Result$map,
+					$elm$core$Tuple$mapFirst(
+						$elm$core$List$cons(val)),
+					A3($author$project$LangInterpreter$seqEval, _eval, newCtx, es));
+			} else {
+				var err = _v1.a;
+				return $elm$core$Result$Err(err);
+			}
+		}
+	});
+var $author$project$LangInterpreter$callFnByValue = F5(
+	function (_eval, _v0, pos, fun, argExprs) {
+		var ctx = _v0.a;
+		switch (fun.$) {
+			case 'StrVal':
+				var debug = fun.a;
+				var s = fun.b;
+				if (!argExprs.b) {
+					return $elm$core$Result$Ok(
+						_Utils_Tuple2(
+							A2($author$project$LangInterpreter$StrVal, debug, s),
+							$author$project$LangInterpreter$EvalContext(ctx)));
+				} else {
+					return $elm$core$Result$Err(
+						A2($author$project$LangInterpreter$TypeMismatch, debug, 'Can only \'call\' a string in a no-arguments form, like (dollar)'));
+				}
+			case 'FnVal':
+				var run = fun.b;
+				var _v3 = A3(
+					$author$project$LangInterpreter$seqEval,
+					_eval,
+					$author$project$LangInterpreter$EvalContext(ctx),
+					argExprs);
+				if (_v3.$ === 'Ok') {
+					var _v4 = _v3.a;
+					var vals = _v4.a;
+					var newCtx = _v4.b;
+					return A3(
+						run,
+						newCtx,
+						$author$project$LangInterpreter$posDebug(pos),
+						vals);
+				} else {
+					var e = _v3.a;
+					return $elm$core$Result$Err(e);
+				}
+			case 'MacroFnVal':
+				var run = fun.b;
+				return A3(
+					run,
+					$author$project$LangInterpreter$EvalContext(ctx),
+					$author$project$LangInterpreter$posDebug(pos),
+					argExprs);
+			default:
+				var val = fun;
+				return $elm$core$Result$Err(
+					A2(
+						$author$project$LangInterpreter$TypeMismatch,
+						$author$project$LangInterpreter$debugInfo(val),
+						'I only know how to call functions'));
+		}
+	});
+var $author$project$LangInterpreter$callFnByName = F5(
+	function (_eval, _v0, pos, funName, argExprs) {
+		var ctx = _v0.a;
+		var _v1 = A2($elm$core$Dict$get, funName, ctx.names);
+		if (_v1.$ === 'Just') {
+			var fun = _v1.a;
+			return A5(
+				$author$project$LangInterpreter$callFnByValue,
+				_eval,
+				$author$project$LangInterpreter$EvalContext(ctx),
+				pos,
+				fun,
+				argExprs);
+		} else {
+			return $elm$core$Result$Err(
+				A2(
+					$author$project$LangInterpreter$UnknownName,
+					$author$project$LangInterpreter$posDebug(pos),
+					funName));
+		}
+	});
+var $author$project$LangInterpreter$evalInContext = F2(
+	function (_v0, expr) {
+		var ctx = _v0.a;
+		switch (expr.$) {
+			case 'StrE':
+				var pos = expr.a;
+				var str = expr.b;
+				return $elm$core$Result$Ok(
+					_Utils_Tuple2(
+						A2(
+							$author$project$LangInterpreter$StrVal,
+							$author$project$LangInterpreter$posDebug(pos),
+							str),
+						$author$project$LangInterpreter$EvalContext(ctx)));
+			case 'NameE':
+				var pos = expr.a;
+				var name = expr.b;
+				var _v2 = A2($elm$core$Dict$get, name, ctx.names);
+				if (_v2.$ === 'Just') {
+					var val = _v2.a;
+					return $elm$core$Result$Ok(
+						_Utils_Tuple2(
+							val,
+							$author$project$LangInterpreter$EvalContext(ctx)));
+				} else {
+					return $elm$core$Result$Err(
+						A2(
+							$author$project$LangInterpreter$UnknownName,
+							$author$project$LangInterpreter$posDebug(pos),
+							name));
+				}
+			default:
+				var pos = expr.a;
+				var funName = expr.b;
+				var argExprs = expr.c;
+				return A5(
+					$author$project$LangInterpreter$callFnByName,
+					$author$project$LangInterpreter$evalInContext,
+					$author$project$LangInterpreter$EvalContext(ctx),
+					pos,
+					funName,
+					argExprs);
+		}
+	});
+var $author$project$LangInterpreter$evalWithReplacements = F3(
+	function (vars, ctx, expr) {
+		switch (expr.$) {
+			case 'NameE':
+				var name = expr.b;
+				if (A2($elm$core$String$startsWith, '%', name)) {
+					var _v1 = A2(
+						$elm$core$Dict$get,
+						A3($elm$core$String$slice, 1, -1, name),
+						vars);
+					if (_v1.$ === 'Just') {
+						var val = _v1.a;
+						return $elm$core$Result$Ok(
+							_Utils_Tuple2(val, ctx));
+					} else {
+						return A2($author$project$LangInterpreter$evalInContext, ctx, expr);
+					}
+				} else {
+					return A2($author$project$LangInterpreter$evalInContext, ctx, expr);
+				}
+			case 'StrE':
+				return A2($author$project$LangInterpreter$evalInContext, ctx, expr);
+			default:
+				var pos = expr.a;
+				var funName = expr.b;
+				var argExprs = expr.c;
+				if (A2($elm$core$String$startsWith, '%', funName)) {
+					var _v2 = A2(
+						$elm$core$Dict$get,
+						A3($elm$core$String$slice, 1, -1, funName),
+						vars);
+					if (_v2.$ === 'Just') {
+						var fun = _v2.a;
+						return A5(
+							$author$project$LangInterpreter$callFnByValue,
+							$author$project$LangInterpreter$evalWithReplacements(vars),
+							ctx,
+							pos,
+							fun,
+							argExprs);
+					} else {
+						return A2($author$project$LangInterpreter$evalInContext, ctx, expr);
+					}
+				} else {
+					return A5(
+						$author$project$LangInterpreter$callFnByName,
+						$author$project$LangInterpreter$evalWithReplacements(vars),
+						ctx,
+						pos,
+						funName,
+						argExprs);
+				}
+		}
+	});
+var $author$project$LangParser$exprPos = function (expr) {
+	switch (expr.$) {
+		case 'StrE':
+			var pos = expr.a;
+			return pos;
+		case 'NameE':
+			var pos = expr.a;
+			return pos;
+		default:
+			var pos = expr.a;
+			return pos;
+	}
+};
 var $elm$core$Dict$fromList = function (assocs) {
 	return A3(
 		$elm$core$List$foldl,
@@ -11721,6 +11980,74 @@ var $author$project$LangInterpreter$manyInlineFun = F2(
 										build(vs)));
 							})))));
 	});
+var $elm$core$Result$map2 = F3(
+	function (func, ra, rb) {
+		if (ra.$ === 'Err') {
+			var x = ra.a;
+			return $elm$core$Result$Err(x);
+		} else {
+			var a = ra.a;
+			if (rb.$ === 'Err') {
+				var x = rb.a;
+				return $elm$core$Result$Err(x);
+			} else {
+				var b = rb.a;
+				return $elm$core$Result$Ok(
+					A2(func, a, b));
+			}
+		}
+	});
+var $author$project$LangInterpreter$JustRight = function (a) {
+	return {$: 'JustRight', a: a};
+};
+var $author$project$LangInterpreter$LeftOverflow = function (a) {
+	return {$: 'LeftOverflow', a: a};
+};
+var $author$project$LangInterpreter$RightOverflow = function (a) {
+	return {$: 'RightOverflow', a: a};
+};
+var $author$project$LangInterpreter$zipExact = F2(
+	function (xl, yl) {
+		var _v0 = _Utils_Tuple2(xl, yl);
+		if (!_v0.a.b) {
+			if (!_v0.b.b) {
+				return $author$project$LangInterpreter$JustRight(_List_Nil);
+			} else {
+				var _v2 = _v0.b;
+				var y = _v2.a;
+				var yr = _v2.b;
+				return $author$project$LangInterpreter$RightOverflow(
+					_Utils_Tuple2(y, yr));
+			}
+		} else {
+			if (!_v0.b.b) {
+				var _v1 = _v0.a;
+				var x = _v1.a;
+				var xr = _v1.b;
+				return $author$project$LangInterpreter$LeftOverflow(
+					_Utils_Tuple2(x, xr));
+			} else {
+				var _v3 = _v0.a;
+				var x = _v3.a;
+				var xr = _v3.b;
+				var _v4 = _v0.b;
+				var y = _v4.a;
+				var yr = _v4.b;
+				var _v5 = A2($author$project$LangInterpreter$zipExact, xr, yr);
+				if (_v5.$ === 'JustRight') {
+					var prev = _v5.a;
+					return $author$project$LangInterpreter$JustRight(
+						A2(
+							$elm$core$List$cons,
+							_Utils_Tuple2(x, y),
+							prev));
+				} else {
+					var other = _v5;
+					return other;
+				}
+			}
+		}
+	});
 var $author$project$LangInterpreter$defaultCtx = $author$project$LangInterpreter$EvalContext(
 	{
 		names: $elm$core$Dict$fromList(
@@ -11782,6 +12109,9 @@ var $author$project$LangInterpreter$defaultCtx = $author$project$LangInterpreter
 					_Utils_Tuple2(
 					'italic',
 					A2($author$project$LangInterpreter$manyInlineFun, 'italic', $author$project$LangInterpreter$ItalicV)),
+					_Utils_Tuple2(
+					'bold',
+					A2($author$project$LangInterpreter$manyInlineFun, 'bold', $author$project$LangInterpreter$BoldV)),
 					_Utils_Tuple2(
 					'term',
 					A2($author$project$LangInterpreter$manyInlineFun, 'term', $author$project$LangInterpreter$ItalicV)),
@@ -12031,146 +12361,216 @@ var $author$project$LangInterpreter$defaultCtx = $author$project$LangInterpreter
 																		$author$project$LangInterpreter$TextV(')')
 																	])
 																])))));
-										}))))))
-				]))
-	});
-var $author$project$LangInterpreter$UnknownName = F2(
-	function (a, b) {
-		return {$: 'UnknownName', a: a, b: b};
-	});
-var $author$project$LangInterpreter$debugInfo = function (val) {
-	switch (val.$) {
-		case 'StrVal':
-			var d = val.a;
-			return d;
-		case 'ListVal':
-			var d = val.a;
-			return d;
-		case 'VisVal':
-			var d = val.a;
-			return d;
-		default:
-			var d = val.a;
-			return d;
-	}
-};
-var $author$project$LangInterpreter$UserExpr = function (a) {
-	return {$: 'UserExpr', a: a};
-};
-var $author$project$LangInterpreter$posDebug = function (pos) {
-	return $author$project$LangInterpreter$UserExpr(pos);
-};
-var $author$project$LangInterpreter$evalInContext = F2(
-	function (_v3, expr) {
-		var ctx = _v3.a;
-		switch (expr.$) {
-			case 'StrE':
-				var pos = expr.a;
-				var str = expr.b;
-				return $elm$core$Result$Ok(
+										})))))),
 					_Utils_Tuple2(
-						A2(
-							$author$project$LangInterpreter$StrVal,
-							$author$project$LangInterpreter$posDebug(pos),
-							str),
-						$author$project$LangInterpreter$EvalContext(ctx)));
-			case 'NameE':
-				var pos = expr.a;
-				var name = expr.b;
-				var _v5 = A2($elm$core$Dict$get, name, ctx.names);
-				if (_v5.$ === 'Just') {
-					var val = _v5.a;
-					return $elm$core$Result$Ok(
-						_Utils_Tuple2(
-							val,
-							$author$project$LangInterpreter$EvalContext(ctx)));
-				} else {
-					return $elm$core$Result$Err(
-						A2(
-							$author$project$LangInterpreter$UnknownName,
-							$author$project$LangInterpreter$posDebug(pos),
-							name));
-				}
-			default:
-				var pos = expr.a;
-				var funName = expr.b;
-				var argExprs = expr.c;
-				var _v6 = A2($elm$core$Dict$get, funName, ctx.names);
-				if (_v6.$ === 'Just') {
-					switch (_v6.a.$) {
-						case 'StrVal':
-							var _v7 = _v6.a;
-							var debug = _v7.a;
-							var s = _v7.b;
-							if (!argExprs.b) {
-								return $elm$core$Result$Ok(
-									_Utils_Tuple2(
-										A2($author$project$LangInterpreter$StrVal, debug, s),
-										$author$project$LangInterpreter$EvalContext(ctx)));
+					'def',
+					A2(
+						$author$project$LangInterpreter$MacroFnVal,
+						$author$project$LangInterpreter$builtinDebug('def'),
+						F3(
+							function (ctx, callSite, argExprs) {
+								if ((argExprs.b && argExprs.b.b) && (!argExprs.b.b.b)) {
+									if (argExprs.a.$ === 'NameE') {
+										var _v2 = argExprs.a;
+										var name = _v2.b;
+										var _v3 = argExprs.b;
+										var expr = _v3.a;
+										return A2(
+											$elm$core$Result$map,
+											function (_v4) {
+												var val = _v4.a;
+												var newCtx = _v4.b.a;
+												return _Utils_Tuple2(
+													A2($author$project$LangInterpreter$VisVal, callSite, $author$project$LangInterpreter$NoneV),
+													$author$project$LangInterpreter$EvalContext(
+														_Utils_update(
+															newCtx,
+															{
+																names: A3($elm$core$Dict$insert, name, val, newCtx.names)
+															})));
+											},
+											A2($author$project$LangInterpreter$evalInContext, ctx, expr));
+									} else {
+										var _v5 = argExprs.b;
+										return $elm$core$Result$Err(
+											A2($author$project$LangInterpreter$TypeMismatch, callSite, 'First argument to def should be a name, like: (def my-name \"alice\")'));
+									}
+								} else {
+									return $elm$core$Result$Err(
+										A2($author$project$LangInterpreter$MacroError, callSite, 'Expected exactly 2 arguments: name and value'));
+								}
+							}))),
+					_Utils_Tuple2(
+					'defun',
+					A2(
+						$author$project$LangInterpreter$MacroFnVal,
+						$author$project$LangInterpreter$builtinDebug('defun'),
+						F3(
+							function (ctx, callSite, defunArgExprs) {
+								if ((defunArgExprs.b && defunArgExprs.b.b) && (!defunArgExprs.b.b.b)) {
+									if (defunArgExprs.a.$ === 'CallE') {
+										var _v7 = defunArgExprs.a;
+										var callPos = _v7.a;
+										var funName = _v7.b;
+										var argExprs = _v7.c;
+										var _v8 = defunArgExprs.b;
+										var bodyExpr = _v8.a;
+										if (argExprs.b) {
+											if (argExprs.a.$ === 'NameE') {
+												var _v10 = argExprs.a;
+												var argNamesPos = _v10.a;
+												var firstArg = _v10.b;
+												var restArgs = argExprs.b;
+												return A2(
+													$author$project$LangInterpreter$evalInContext,
+													ctx,
+													A3(
+														$author$project$LangParser$CallE,
+														callPos,
+														'def',
+														_List_fromArray(
+															[
+																A2($author$project$LangParser$NameE, callPos, funName),
+																A3(
+																$author$project$LangParser$CallE,
+																callPos,
+																'fun',
+																_List_fromArray(
+																	[
+																		A3($author$project$LangParser$CallE, argNamesPos, firstArg, restArgs),
+																		bodyExpr
+																	]))
+															])));
+											} else {
+												return $elm$core$Result$Err(
+													A2(
+														$author$project$LangInterpreter$MacroError,
+														$author$project$LangInterpreter$InExpr(callPos),
+														'Expected an argument name, like %foo'));
+											}
+										} else {
+											return $elm$core$Result$Err(
+												A2($author$project$LangInterpreter$MacroError, callSite, 'If you don\'t want to take any arguments, use a \'def\''));
+										}
+									} else {
+										var _v11 = defunArgExprs.b;
+										return $elm$core$Result$Err(
+											A2($author$project$LangInterpreter$TypeMismatch, callSite, 'Expected a form like (add %x %y) as the first argument to defun'));
+									}
+								} else {
+									return $elm$core$Result$Err(
+										A2($author$project$LangInterpreter$TypeMismatch, callSite, 'Expected exactly two arguments to defun'));
+								}
+							}))),
+					_Utils_Tuple2(
+					'fun',
+					function () {
+						var parseArg = function (expr) {
+							if (expr.$ === 'NameE') {
+								var pos = expr.a;
+								var name = expr.b;
+								return A2($elm$core$String$startsWith, '%', name) ? $elm$core$Result$Ok(
+									A3($elm$core$String$slice, 1, -1, name)) : $elm$core$Result$Err(
+									A2(
+										$author$project$LangInterpreter$MacroError,
+										$author$project$LangInterpreter$InExpr(pos),
+										'Expected argument name to start with %'));
 							} else {
+								var other = expr;
 								return $elm$core$Result$Err(
-									A2($author$project$LangInterpreter$TypeMismatch, debug, 'Can only \'call\' a string in a no-arguments form, like (dollar)'));
+									A2(
+										$author$project$LangInterpreter$MacroError,
+										$author$project$LangInterpreter$InExpr(
+											$author$project$LangParser$exprPos(other)),
+										'Expected an argument name like %foo'));
 							}
-						case 'FnVal':
-							var _v9 = _v6.a;
-							var run = _v9.b;
-							var _v10 = A2(
-								$author$project$LangInterpreter$seqEval,
-								$author$project$LangInterpreter$EvalContext(ctx),
-								argExprs);
-							if (_v10.$ === 'Ok') {
-								var _v11 = _v10.a;
-								var vals = _v11.a;
-								var newCtx = _v11.b;
+						};
+						var parseArgs = function (exprs) {
+							if (exprs.b) {
+								var e = exprs.a;
+								var es = exprs.b;
 								return A3(
-									run,
-									newCtx,
-									$author$project$LangInterpreter$posDebug(pos),
-									vals);
+									$elm$core$Result$map2,
+									$elm$core$List$cons,
+									parseArg(e),
+									parseArgs(es));
 							} else {
-								var e = _v10.a;
-								return $elm$core$Result$Err(e);
+								return $elm$core$Result$Ok(_List_Nil);
 							}
-						default:
-							var val = _v6.a;
-							return $elm$core$Result$Err(
-								A2(
-									$author$project$LangInterpreter$TypeMismatch,
-									$author$project$LangInterpreter$debugInfo(val),
-									'I only know how to call functions'));
-					}
-				} else {
-					return $elm$core$Result$Err(
-						A2(
-							$author$project$LangInterpreter$UnknownName,
-							$author$project$LangInterpreter$posDebug(pos),
-							funName));
-				}
-		}
-	});
-var $author$project$LangInterpreter$seqEval = F2(
-	function (ctx, exprs) {
-		if (!exprs.b) {
-			return $elm$core$Result$Ok(
-				_Utils_Tuple2(_List_Nil, ctx));
-		} else {
-			var e = exprs.a;
-			var es = exprs.b;
-			var _v1 = A2($author$project$LangInterpreter$evalInContext, ctx, e);
-			if (_v1.$ === 'Ok') {
-				var _v2 = _v1.a;
-				var val = _v2.a;
-				var newCtx = _v2.b;
-				return A2(
-					$elm$core$Result$map,
-					$elm$core$Tuple$mapFirst(
-						$elm$core$List$cons(val)),
-					A2($author$project$LangInterpreter$seqEval, newCtx, es));
-			} else {
-				var err = _v1.a;
-				return $elm$core$Result$Err(err);
-			}
-		}
+						};
+						return A2(
+							$author$project$LangInterpreter$MacroFnVal,
+							$author$project$LangInterpreter$builtinDebug('fun'),
+							F3(
+								function (defCtx, defCallSite, argExprs) {
+									if ((argExprs.b && argExprs.b.b) && (!argExprs.b.b.b)) {
+										if (argExprs.a.$ === 'CallE') {
+											var _v14 = argExprs.a;
+											var pos = _v14.a;
+											var firstName = _v14.b;
+											var restNamesExprs = _v14.c;
+											var _v15 = argExprs.b;
+											var body = _v15.a;
+											var newFn = function (argNames) {
+												return A2(
+													$author$project$LangInterpreter$FnVal,
+													$author$project$LangInterpreter$InUserFunction(
+														{origin: defCallSite}),
+													F3(
+														function (callCtx, callSite, argVals) {
+															var _v16 = A2($author$project$LangInterpreter$zipExact, argNames, argVals);
+															switch (_v16.$) {
+																case 'JustRight':
+																	var kvs = _v16.a;
+																	return A3(
+																		$author$project$LangInterpreter$evalWithReplacements,
+																		$elm$core$Dict$fromList(kvs),
+																		callCtx,
+																		body);
+																case 'LeftOverflow':
+																	var _v17 = _v16.a;
+																	var names = _v17.b;
+																	return $elm$core$Result$Err(
+																		A2(
+																			$author$project$LangInterpreter$NotEnoughArgs,
+																			$elm$core$List$length(names),
+																			callSite));
+																default:
+																	var _v18 = _v16.a;
+																	var val = _v18.a;
+																	var vals = _v18.b;
+																	return $elm$core$Result$Err(
+																		A2(
+																			$author$project$LangInterpreter$TooManyArgs,
+																			_Utils_Tuple2(val, vals),
+																			callSite));
+															}
+														}));
+											};
+											return A2(
+												$elm$core$Result$map,
+												function (argNames) {
+													return _Utils_Tuple2(
+														newFn(argNames),
+														defCtx);
+												},
+												parseArgs(
+													A2(
+														$elm$core$List$cons,
+														A2($author$project$LangParser$NameE, pos, firstName),
+														restNamesExprs)));
+										} else {
+											var _v19 = argExprs.b;
+											return $elm$core$Result$Err(
+												A2($author$project$LangInterpreter$TypeMismatch, defCallSite, 'Expected a form like (%x %y) as the first argument to fun'));
+										}
+									} else {
+										return $elm$core$Result$Err(
+											A2($author$project$LangInterpreter$TypeMismatch, defCallSite, 'Expected exactly two arguments to fun'));
+									}
+								}));
+					}())
+				]))
 	});
 var $elm$parser$Parser$ExpectingEnd = {$: 'ExpectingEnd'};
 var $elm$parser$Parser$Advanced$Bad = F2(
@@ -12290,14 +12690,6 @@ var $elm$parser$Parser$Advanced$andThen = F2(
 			});
 	});
 var $elm$parser$Parser$andThen = $elm$parser$Parser$Advanced$andThen;
-var $author$project$LangParser$CallE = F3(
-	function (a, b, c) {
-		return {$: 'CallE', a: a, b: b, c: c};
-	});
-var $author$project$LangParser$NameE = F2(
-	function (a, b) {
-		return {$: 'NameE', a: a, b: b};
-	});
 var $author$project$LangParser$StrE = F2(
 	function (a, b) {
 		return {$: 'StrE', a: a, b: b};
@@ -12745,7 +13137,11 @@ var $author$project$LangParser$identifier = $elm$parser$Parser$variable(
 				_Utils_chr('-')));
 		},
 		reserved: $elm$core$Set$empty,
-		start: $elm$core$Char$isLower
+		start: function (c) {
+			return $elm$core$Char$isLower(c) || _Utils_eq(
+				c,
+				_Utils_chr('%'));
+		}
 	});
 var $elm$parser$Parser$Optional = {$: 'Optional'};
 var $elm$core$String$cons = _String_cons;
