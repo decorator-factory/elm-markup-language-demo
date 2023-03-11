@@ -54,7 +54,7 @@ type Block
     | UnorderedListV (List Vis)
     | ParagraphV (List Inline)
     | CodeblockV (List Vis)
-    | AsideV Block
+    | AsideV Vis
     | AnchorV String Block
     | ImageV String
 
@@ -446,7 +446,7 @@ defaultCtx =
                   , buildFn "aside"
                         (arConst (\cs block -> VisVal cs (BlockVis (AsideV block)))
                             |> arAnd getCallSite
-                            |> arAnd (arChomp aBlock)
+                            |> arAnd (arChomp aVis)
                         )
                   )
                 , ( "anchor"

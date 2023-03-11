@@ -180,7 +180,7 @@ viewBlock : I.Block -> E.Element msg
 viewBlock vis =
     case vis of
         I.ColumnV vs ->
-            E.column
+            E.textColumn
                 [ E.spacing 32
                 , E.width (E.fillPortion 5 |> E.maximum 1000)
                 ]
@@ -200,13 +200,13 @@ viewBlock vis =
                         (\v ->
                             E.row [ E.spacing 8 ]
                                 [ E.el [ E.alignTop, E.paddingXY 4 0 ] (E.text "•")
-                                , E.el [ E.alignTop ] (viewVis v)
+                                , E.el [ E.alignTop, E.width E.fill ] (viewVis v)
                                 ]
                         )
                 )
 
         I.ParagraphV is ->
-            E.paragraph [ E.width (E.px 800), E.spacing 8 ]
+            E.paragraph [ E.width (E.fillPortion 4 |> E.maximum 800), E.spacing 8 ]
                 (List.map viewInline is)
 
         I.CodeblockV vs ->
@@ -221,16 +221,16 @@ viewBlock vis =
                 ]
                 (List.map viewVis vs)
 
-        I.AsideV b ->
+        I.AsideV v ->
             E.el
-                [ E.width (E.fillPortion 1 |> E.maximum 400)
+                [ E.width (E.fillPortion 1 |> E.maximum 500)
                 , E.alignRight
                 , E.alignTop
                 , Font.color (E.rgb255 50 50 50)
-                , Bg.color (E.rgb255 250 250 250)
-                , E.padding 8
+                , Bg.color (E.rgb255 240 240 250)
+                , E.padding 16
                 ]
-                (viewBlock b)
+                (viewVis v)
 
         I.AnchorV tag b ->
             E.el [ E.htmlAttribute <| Html.Attributes.id ("elm_vis__" ++ tag) ] (viewBlock b)
