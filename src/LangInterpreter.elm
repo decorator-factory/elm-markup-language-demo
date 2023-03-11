@@ -17,7 +17,7 @@ import LangParser exposing (Expr(..), Pos, Token(..))
 
 type DebugInfo
     = InExpr Pos
-    | InUserFunction { name : String, origin : DebugInfo }
+    | InUserFunction { origin : DebugInfo }
     | InBuiltin { name : String }
     | CallingFrom { func : DebugInfo, callSite : DebugInfo }
     | Missing
@@ -97,8 +97,8 @@ reprDebug debug =
         CallingFrom { func, callSite } ->
             "While calling <" ++ reprDebug func ++ ">: " ++ reprDebug callSite
 
-        InUserFunction { name, origin } ->
-            "While calling function '" ++ name ++ "' defined at " ++ reprDebug origin
+        InUserFunction { origin } ->
+            "While calling function defined at " ++ reprDebug origin
 
         Missing ->
             "<?>"
@@ -540,8 +540,29 @@ defaultCtx =
                         )
                   )
 
-                -- Function definitions
+                -- Definitions
                 , ( "def"
+                  , MacroFnVal
+                        (builtinDebug "def")
+                        (\ctx callSite argExprs ->
+                            case argExprs of
+                                [ NameE _ name, expr ] ->
+                                    evalInContext ctx expr
+                                        |> Result.map
+                                            (\( val, EvalContext newCtx ) ->
+                                                ( VisVal callSite NoneV
+                                                , EvalContext <| { newCtx | names = newCtx.names |> Dict.insert name val }
+                                                )
+                                            )
+
+                                [ _, _ ] ->
+                                    Err (TypeMismatch callSite "First argument to def should be a name, like: (def my-name \"alice\")")
+
+                                _ ->
+                                    Err (MacroError callSite "Expected exactly 2 arguments: name and value")
+                        )
+                  )
+                , ( "fun"
                   , let
                         parseArg : Expr -> Result EvalError String
                         parseArg expr =
@@ -569,14 +590,14 @@ defaultCtx =
                                     Ok []
                     in
                     MacroFnVal
-                        (builtinDebug "def")
-                        (\(EvalContext defCtx) defCallSite argExprs ->
+                        (builtinDebug "fun")
+                        (\defCtx defCallSite argExprs ->
                             case argExprs of
-                                [ CallE _ fnName argNamesExprs, body ] ->
+                                [ CallE pos firstName restNamesExprs, body ] ->
                                     let
                                         newFn argNames =
                                             FnVal
-                                                (InUserFunction { name = fnName, origin = defCallSite })
+                                                (InUserFunction { origin = defCallSite })
                                                 (\callCtx callSite argVals ->
                                                     case zipExact argNames argVals of
                                                         JustRight kvs ->
@@ -589,13 +610,8 @@ defaultCtx =
                                                             Err (TooManyArgs ( val, vals ) callSite)
                                                 )
                                     in
-                                    parseArgs argNamesExprs
-                                        |> Result.map
-                                            (\argNames ->
-                                                ( VisVal defCallSite NoneV
-                                                , EvalContext { names = Dict.insert fnName (newFn argNames) defCtx.names }
-                                                )
-                                            )
+                                    parseArgs (NameE pos firstName :: restNamesExprs)
+                                        |> Result.map (\argNames -> ( newFn argNames, defCtx ))
 
                                 [ _, _ ] ->
                                     Err (TypeMismatch defCallSite "Expected a form like (add x y) as the first argument")
