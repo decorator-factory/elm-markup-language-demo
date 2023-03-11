@@ -63,6 +63,7 @@ type Inline
     | BoldV (List Inline)
     | ItalicV (List Inline)
     | LinkV String (List Inline)
+    | FractionV { top : Inline, bottom : Inline, scale : Float }
 
 
 type Vis
@@ -141,6 +142,15 @@ evalInContext (EvalContext ctx) expr =
 
         CallE pos funName argExprs ->
             case Dict.get funName ctx.names of
+                Just (StrVal debug s) ->
+                    case argExprs of
+                        [] ->
+                            Ok ( StrVal debug s, EvalContext ctx )
+
+                        _ ->
+                            -- TODO: use TooManyArgs?..
+                            Err <| TypeMismatch debug "Can only 'call' a string in a no-arguments form, like (dollar)"
+
                 Just (FnVal _ run) ->
                     case seqEval (EvalContext ctx) argExprs of
                         Ok ( vals, newCtx ) ->
@@ -361,6 +371,9 @@ defaultCtx =
                 [ ( "emdash"
                   , StrVal (builtinDebug "emdash") "—"
                   )
+                , ( "dollar"
+                  , StrVal (builtinDebug "dollar") "$"
+                  )
                 , ( "article"
                   , manyBlockFun "article" ColumnV
                   )
@@ -428,6 +441,30 @@ defaultCtx =
                         (arConst (\cs url -> VisVal cs (BlockVis (ImageV url)))
                             |> arAnd getCallSite
                             |> arAnd (arChomp aStr)
+                        )
+                  )
+
+                -- Math stuff
+                , ( "frac"
+                  , buildFn "frac"
+                        (arConst
+                            (\cs top bottom ->
+                                VisVal cs (InlineVis (FractionV { top = top, bottom = bottom, scale = 0.85 }))
+                            )
+                            |> arAnd getCallSite
+                            |> arAnd (arChomp anInline)
+                            |> arAnd (arChomp anInline)
+                        )
+                  )
+                , ( "big-frac"
+                  , buildFn "big-frac"
+                        (arConst
+                            (\cs top bottom ->
+                                VisVal cs (InlineVis (FractionV { top = top, bottom = bottom, scale = 1.0 }))
+                            )
+                            |> arAnd getCallSite
+                            |> arAnd (arChomp anInline)
+                            |> arAnd (arChomp anInline)
                         )
                   )
                 ]
