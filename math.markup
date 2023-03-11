@@ -1,0 +1,9 @@
+(col
+  (para
+    | Hello, world! $(sup "x" "2") + $(sup "y" "2") = $(sup "z" "2")
+    | $(emdash) what an amazing equation.
+  )
+  (para
+    | sqrt $(gr (sup "x" "96") "-" (frac "2" (sup "y" "2")))
+  )
+)
