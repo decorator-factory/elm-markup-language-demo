@@ -1,4 +1,4 @@
-module Interpreter exposing
+module LangInterpreter exposing
     ( Block(..)
     , DebugInfo(..)
     , EvalContext
@@ -12,7 +12,7 @@ module Interpreter exposing
     )
 
 import Dict exposing (Dict)
-import Pts exposing (Expr(..), Pos, Token(..))
+import LangParser exposing (Expr(..), Pos, Token(..))
 
 
 type DebugInfo
@@ -80,7 +80,7 @@ reprDebug : DebugInfo -> String
 reprDebug debug =
     case debug of
         UserExpr pos ->
-            Pts.posRepr pos
+            LangParser.posRepr pos
 
         InBuiltin { name } ->
             name
