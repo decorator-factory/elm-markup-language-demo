@@ -11264,78 +11264,614 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			view: impl.view
 		});
 };
-var $author$project$Interpreter$AnchorV = F2(
+var $author$project$LangInterpreter$AnchorV = F2(
 	function (a, b) {
 		return {$: 'AnchorV', a: a, b: b};
 	});
-var $author$project$Interpreter$AsideV = function (a) {
+var $author$project$LangInterpreter$AsideV = function (a) {
 	return {$: 'AsideV', a: a};
 };
-var $author$project$Interpreter$BlockVis = function (a) {
+var $author$project$LangInterpreter$BlockVis = function (a) {
 	return {$: 'BlockVis', a: a};
 };
-var $author$project$Interpreter$CodeblockV = function (a) {
+var $author$project$LangInterpreter$CodeblockV = function (a) {
 	return {$: 'CodeblockV', a: a};
 };
-var $author$project$Interpreter$ColumnV = function (a) {
+var $author$project$LangInterpreter$ColumnV = function (a) {
 	return {$: 'ColumnV', a: a};
 };
-var $author$project$Interpreter$EvalContext = function (a) {
+var $author$project$LangInterpreter$EvalContext = function (a) {
 	return {$: 'EvalContext', a: a};
 };
-var $author$project$Interpreter$FnVal = F2(
+var $author$project$LangInterpreter$FnVal = F2(
 	function (a, b) {
 		return {$: 'FnVal', a: a, b: b};
 	});
-var $author$project$Interpreter$ImageV = function (a) {
+var $author$project$LangInterpreter$ImageV = function (a) {
 	return {$: 'ImageV', a: a};
 };
-var $author$project$Interpreter$InlineCodeV = function (a) {
+var $author$project$LangInterpreter$InlineCodeV = function (a) {
 	return {$: 'InlineCodeV', a: a};
 };
-var $author$project$Interpreter$ItalicV = function (a) {
+var $author$project$LangInterpreter$InlineVis = function (a) {
+	return {$: 'InlineVis', a: a};
+};
+var $author$project$LangInterpreter$ItalicV = function (a) {
 	return {$: 'ItalicV', a: a};
 };
-var $author$project$Interpreter$LinkV = F2(
+var $author$project$LangInterpreter$LinkV = F2(
 	function (a, b) {
 		return {$: 'LinkV', a: a, b: b};
 	});
-var $author$project$Interpreter$NoneV = {$: 'NoneV'};
-var $author$project$Interpreter$ParagraphV = function (a) {
+var $author$project$LangInterpreter$NoneV = {$: 'NoneV'};
+var $author$project$LangInterpreter$ParagraphV = function (a) {
 	return {$: 'ParagraphV', a: a};
 };
-var $author$project$Interpreter$RowV = function (a) {
+var $author$project$LangInterpreter$RowV = function (a) {
 	return {$: 'RowV', a: a};
 };
-var $author$project$Interpreter$StrVal = F2(
+var $author$project$LangInterpreter$StrVal = F2(
 	function (a, b) {
 		return {$: 'StrVal', a: a, b: b};
 	});
-var $author$project$Interpreter$TypeMismatch = F2(
-	function (a, b) {
-		return {$: 'TypeMismatch', a: a, b: b};
-	});
-var $author$project$Interpreter$UnorderedListV = function (a) {
+var $author$project$LangInterpreter$UnorderedListV = function (a) {
 	return {$: 'UnorderedListV', a: a};
 };
-var $author$project$Interpreter$VisVal = F2(
+var $author$project$LangInterpreter$VisVal = F2(
 	function (a, b) {
 		return {$: 'VisVal', a: a, b: b};
 	});
-var $author$project$Interpreter$WrongArgCount = function (a) {
-	return {$: 'WrongArgCount', a: a};
+var $author$project$LangInterpreter$ArWrongArgType = F2(
+	function (a, b) {
+		return {$: 'ArWrongArgType', a: a, b: b};
+	});
+var $author$project$LangInterpreter$aBlock = function (arg) {
+	if ((arg.$ === 'VisVal') && (arg.b.$ === 'BlockVis')) {
+		var v = arg.b.a;
+		return $elm$core$Result$Ok(v);
+	} else {
+		return $elm$core$Result$Err(
+			function (n) {
+				return A2(
+					$author$project$LangInterpreter$ArWrongArgType,
+					n,
+					{expected: 'a block element'});
+			});
+	}
 };
-var $author$project$Interpreter$InBuiltin = function (a) {
-	return {$: 'InBuiltin', a: a};
+var $author$project$LangInterpreter$aStr = function (arg) {
+	if (arg.$ === 'StrVal') {
+		var s = arg.b;
+		return $elm$core$Result$Ok(s);
+	} else {
+		return $elm$core$Result$Err(
+			function (n) {
+				return A2(
+					$author$project$LangInterpreter$ArWrongArgType,
+					n,
+					{expected: 'a string'});
+			});
+	}
 };
-var $author$project$Interpreter$builtinDebug = function (name) {
-	return $author$project$Interpreter$InBuiltin(
-		{name: name});
-};
-var $author$project$Interpreter$TextV = function (a) {
+var $author$project$LangInterpreter$TextV = function (a) {
 	return {$: 'TextV', a: a};
 };
-var $author$project$Interpreter$debugInfo = function (val) {
+var $author$project$LangInterpreter$anInline = function (arg) {
+	_v0$2:
+	while (true) {
+		switch (arg.$) {
+			case 'StrVal':
+				var s = arg.b;
+				return $elm$core$Result$Ok(
+					$author$project$LangInterpreter$TextV(s));
+			case 'VisVal':
+				if (arg.b.$ === 'InlineVis') {
+					var v = arg.b.a;
+					return $elm$core$Result$Ok(v);
+				} else {
+					break _v0$2;
+				}
+			default:
+				break _v0$2;
+		}
+	}
+	return $elm$core$Result$Err(
+		function (n) {
+			return A2(
+				$author$project$LangInterpreter$ArWrongArgType,
+				n,
+				{expected: 'an inline element'});
+		});
+};
+var $author$project$LangInterpreter$arConst = F2(
+	function (a, _v0) {
+		var args = _v0.a;
+		var cs = _v0.b;
+		var n = _v0.c;
+		return $elm$core$Result$Ok(
+			_Utils_Tuple3(a, args, 1));
+	});
+var $elm$core$Result$andThen = F2(
+	function (callback, result) {
+		if (result.$ === 'Ok') {
+			var value = result.a;
+			return callback(value);
+		} else {
+			var msg = result.a;
+			return $elm$core$Result$Err(msg);
+		}
+	});
+var $author$project$LangInterpreter$bumpArgPos = function (err) {
+	if (err.$ === 'ArWrongArgType') {
+		var pos = err.a;
+		var details = err.b;
+		return A2($author$project$LangInterpreter$ArWrongArgType, pos + 1, details);
+	} else {
+		var other = err;
+		return other;
+	}
+};
+var $elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return $elm$core$Result$Err(
+				f(e));
+		}
+	});
+var $author$project$LangInterpreter$arThen = F2(
+	function (fn, ra) {
+		return function (_v0) {
+			var args = _v0.a;
+			var cs = _v0.b;
+			var n = _v0.c;
+			return A2(
+				$elm$core$Result$mapError,
+				$author$project$LangInterpreter$bumpArgPos,
+				A2(
+					$elm$core$Result$andThen,
+					function (_v1) {
+						var a = _v1.a;
+						var rest = _v1.b;
+						var m = _v1.c;
+						return A2(
+							fn,
+							a,
+							_Utils_Tuple3(rest, cs, m));
+					},
+					ra(
+						_Utils_Tuple3(args, cs, n))));
+		};
+	});
+var $author$project$LangInterpreter$arMap = function (fn) {
+	return $author$project$LangInterpreter$arThen(
+		A2($elm$core$Basics$composeR, fn, $author$project$LangInterpreter$arConst));
+};
+var $author$project$LangInterpreter$arAnd = F2(
+	function (ra, rab) {
+		return A2(
+			$author$project$LangInterpreter$arThen,
+			function (f) {
+				return A2($author$project$LangInterpreter$arMap, f, ra);
+			},
+			rab);
+	});
+var $author$project$LangInterpreter$ArTooFewArgs = function (a) {
+	return {$: 'ArTooFewArgs', a: a};
+};
+var $elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return $elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return $elm$core$Result$Err(e);
+		}
+	});
+var $author$project$LangInterpreter$arChomp = function (read) {
+	return function (_v0) {
+		var args = _v0.a;
+		var n = _v0.c;
+		if (args.b) {
+			var first = args.a;
+			var rest = args.b;
+			return A2(
+				$elm$core$Result$map,
+				function (a) {
+					return _Utils_Tuple3(a, rest, n + 1);
+				},
+				A2(
+					$elm$core$Result$mapError,
+					$elm$core$Basics$apR(n),
+					read(first)));
+		} else {
+			return $elm$core$Result$Err(
+				$author$project$LangInterpreter$ArTooFewArgs(n));
+		}
+	};
+};
+var $author$project$LangInterpreter$arRest = function (read) {
+	return function (_v0) {
+		var args = _v0.a;
+		var cs = _v0.b;
+		var n = _v0.c;
+		if (args.b) {
+			var item = args.a;
+			var items = args.b;
+			return A2(
+				$elm$core$Result$andThen,
+				function (a) {
+					return A2(
+						$author$project$LangInterpreter$arMap,
+						$elm$core$List$cons(a),
+						$author$project$LangInterpreter$arRest(read))(
+						_Utils_Tuple3(items, cs, n + 1));
+				},
+				A2(
+					$elm$core$Result$mapError,
+					$elm$core$Basics$apR(n),
+					read(item)));
+		} else {
+			return $elm$core$Result$Ok(
+				_Utils_Tuple3(_List_Nil, _List_Nil, n));
+		}
+	};
+};
+var $author$project$LangInterpreter$CallingFrom = function (a) {
+	return {$: 'CallingFrom', a: a};
+};
+var $author$project$LangInterpreter$ArTooManyArgs = function (a) {
+	return {$: 'ArTooManyArgs', a: a};
+};
+var $author$project$LangInterpreter$arConsume = function (ra) {
+	return function (_v0) {
+		var args = _v0.a;
+		var cs = _v0.b;
+		var n = _v0.c;
+		var _v1 = ra(
+			_Utils_Tuple3(args, cs, n));
+		if (_v1.$ === 'Ok') {
+			if (!_v1.a.b.b) {
+				var _v2 = _v1.a;
+				var a = _v2.a;
+				var m = _v2.c;
+				return $elm$core$Result$Ok(
+					_Utils_Tuple3(a, _List_Nil, m));
+			} else {
+				var _v3 = _v1.a;
+				var _v4 = _v3.b;
+				var first = _v4.a;
+				var rest = _v4.b;
+				return $elm$core$Result$Err(
+					$author$project$LangInterpreter$ArTooManyArgs(
+						_Utils_Tuple2(first, rest)));
+			}
+		} else {
+			var other = _v1.a;
+			return $elm$core$Result$Err(other);
+		}
+	};
+};
+var $author$project$LangInterpreter$InBuiltin = function (a) {
+	return {$: 'InBuiltin', a: a};
+};
+var $author$project$LangInterpreter$builtinDebug = function (name) {
+	return $author$project$LangInterpreter$InBuiltin(
+		{name: name});
+};
+var $author$project$LangInterpreter$NotEnoughArgs = F2(
+	function (a, b) {
+		return {$: 'NotEnoughArgs', a: a, b: b};
+	});
+var $author$project$LangInterpreter$TooManyArgs = F2(
+	function (a, b) {
+		return {$: 'TooManyArgs', a: a, b: b};
+	});
+var $author$project$LangInterpreter$TypeMismatch = F2(
+	function (a, b) {
+		return {$: 'TypeMismatch', a: a, b: b};
+	});
+var $author$project$LangInterpreter$mapArError = F2(
+	function (cs, are) {
+		switch (are.$) {
+			case 'ArTooFewArgs':
+				var n = are.a;
+				return A2($author$project$LangInterpreter$NotEnoughArgs, n, cs);
+			case 'ArTooManyArgs':
+				var _v1 = are.a;
+				var x = _v1.a;
+				var xs = _v1.b;
+				return A2(
+					$author$project$LangInterpreter$TooManyArgs,
+					_Utils_Tuple2(x, xs),
+					cs);
+			default:
+				var argNum = are.a;
+				var expected = are.b.expected;
+				return A2(
+					$author$project$LangInterpreter$TypeMismatch,
+					cs,
+					'In argument ' + ($elm$core$String$fromInt(argNum) + (': expected ' + expected)));
+		}
+	});
+var $author$project$LangInterpreter$buildFn = F2(
+	function (name, reader) {
+		return A2(
+			$author$project$LangInterpreter$FnVal,
+			$author$project$LangInterpreter$builtinDebug(name),
+			F3(
+				function (ctx, cs, args) {
+					return A2(
+						$elm$core$Result$map,
+						function (_v0) {
+							var v = _v0.a;
+							return _Utils_Tuple2(v, ctx);
+						},
+						A2(
+							$elm$core$Result$mapError,
+							$author$project$LangInterpreter$mapArError(cs),
+							A2(
+								$author$project$LangInterpreter$arConsume,
+								reader,
+								_Utils_Tuple3(
+									args,
+									$author$project$LangInterpreter$CallingFrom(
+										{
+											callSite: cs,
+											func: $author$project$LangInterpreter$builtinDebug(name)
+										}),
+									1))));
+				}));
+	});
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
+};
+var $author$project$LangInterpreter$getCallSite = function (_v0) {
+	var args = _v0.a;
+	var cs = _v0.b;
+	var n = _v0.c;
+	return $elm$core$Result$Ok(
+		_Utils_Tuple3(cs, args, n));
+};
+var $author$project$LangInterpreter$aVis = function (arg) {
+	switch (arg.$) {
+		case 'StrVal':
+			var s = arg.b;
+			return $elm$core$Result$Ok(
+				$author$project$LangInterpreter$InlineVis(
+					$author$project$LangInterpreter$TextV(s)));
+		case 'VisVal':
+			var v = arg.b;
+			return $elm$core$Result$Ok(v);
+		default:
+			return $elm$core$Result$Err(
+				function (n) {
+					return A2(
+						$author$project$LangInterpreter$ArWrongArgType,
+						n,
+						{expected: 'a block or inline element'});
+				});
+	}
+};
+var $author$project$LangInterpreter$manyBlockFun = F2(
+	function (name, build) {
+		return A2(
+			$author$project$LangInterpreter$buildFn,
+			name,
+			A2(
+				$author$project$LangInterpreter$arAnd,
+				$author$project$LangInterpreter$arRest($author$project$LangInterpreter$aVis),
+				A2(
+					$author$project$LangInterpreter$arAnd,
+					$author$project$LangInterpreter$getCallSite,
+					$author$project$LangInterpreter$arConst(
+						F2(
+							function (cs, vs) {
+								return A2(
+									$author$project$LangInterpreter$VisVal,
+									cs,
+									$author$project$LangInterpreter$BlockVis(
+										build(vs)));
+							})))));
+	});
+var $author$project$LangInterpreter$manyInlineFun = F2(
+	function (name, build) {
+		return A2(
+			$author$project$LangInterpreter$buildFn,
+			name,
+			A2(
+				$author$project$LangInterpreter$arAnd,
+				$author$project$LangInterpreter$arRest($author$project$LangInterpreter$anInline),
+				A2(
+					$author$project$LangInterpreter$arAnd,
+					$author$project$LangInterpreter$getCallSite,
+					$author$project$LangInterpreter$arConst(
+						F2(
+							function (cs, vs) {
+								return A2(
+									$author$project$LangInterpreter$VisVal,
+									cs,
+									$author$project$LangInterpreter$InlineVis(
+										build(vs)));
+							})))));
+	});
+var $author$project$LangInterpreter$defaultCtx = $author$project$LangInterpreter$EvalContext(
+	{
+		names: $elm$core$Dict$fromList(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'emdash',
+					A2(
+						$author$project$LangInterpreter$StrVal,
+						$author$project$LangInterpreter$builtinDebug('emdash'),
+						'—')),
+					_Utils_Tuple2(
+					'article',
+					A2($author$project$LangInterpreter$manyBlockFun, 'article', $author$project$LangInterpreter$ColumnV)),
+					_Utils_Tuple2(
+					'col',
+					A2($author$project$LangInterpreter$manyBlockFun, 'col', $author$project$LangInterpreter$ColumnV)),
+					_Utils_Tuple2(
+					'bullet-list',
+					A2($author$project$LangInterpreter$manyBlockFun, 'bullet-list', $author$project$LangInterpreter$UnorderedListV)),
+					_Utils_Tuple2(
+					'examine',
+					A2($author$project$LangInterpreter$manyBlockFun, 'examine', $author$project$LangInterpreter$ColumnV)),
+					_Utils_Tuple2(
+					'row',
+					A2($author$project$LangInterpreter$manyBlockFun, 'row', $author$project$LangInterpreter$RowV)),
+					_Utils_Tuple2(
+					'para',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'para',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arRest($author$project$LangInterpreter$anInline),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$getCallSite,
+								$author$project$LangInterpreter$arConst(
+									F2(
+										function (cs, vs) {
+											return A2(
+												$author$project$LangInterpreter$VisVal,
+												cs,
+												$author$project$LangInterpreter$BlockVis(
+													$author$project$LangInterpreter$ParagraphV(vs)));
+										})))))),
+					_Utils_Tuple2(
+					'code',
+					A2($author$project$LangInterpreter$manyInlineFun, 'code', $author$project$LangInterpreter$InlineCodeV)),
+					_Utils_Tuple2(
+					'code-block',
+					A2($author$project$LangInterpreter$manyBlockFun, 'code', $author$project$LangInterpreter$CodeblockV)),
+					_Utils_Tuple2(
+					'italic',
+					A2($author$project$LangInterpreter$manyInlineFun, 'italic', $author$project$LangInterpreter$ItalicV)),
+					_Utils_Tuple2(
+					'term',
+					A2($author$project$LangInterpreter$manyInlineFun, 'term', $author$project$LangInterpreter$ItalicV)),
+					_Utils_Tuple2(
+					'aside',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'aside',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$aBlock),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$getCallSite,
+								$author$project$LangInterpreter$arConst(
+									F2(
+										function (cs, block) {
+											return A2(
+												$author$project$LangInterpreter$VisVal,
+												cs,
+												$author$project$LangInterpreter$BlockVis(
+													$author$project$LangInterpreter$AsideV(block)));
+										})))))),
+					_Utils_Tuple2(
+					'anchor',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'anchor',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$aBlock),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$aStr),
+								A2(
+									$author$project$LangInterpreter$arAnd,
+									$author$project$LangInterpreter$getCallSite,
+									$author$project$LangInterpreter$arConst(
+										F3(
+											function (cs, anchor, block) {
+												return A2(
+													$author$project$LangInterpreter$VisVal,
+													cs,
+													$author$project$LangInterpreter$BlockVis(
+														A2($author$project$LangInterpreter$AnchorV, anchor, block)));
+											}))))))),
+					_Utils_Tuple2(
+					'comment',
+					A2(
+						$author$project$LangInterpreter$FnVal,
+						$author$project$LangInterpreter$builtinDebug('comment'),
+						F3(
+							function (ctx, cs, _v0) {
+								return $elm$core$Result$Ok(
+									_Utils_Tuple2(
+										A2($author$project$LangInterpreter$VisVal, cs, $author$project$LangInterpreter$NoneV),
+										ctx));
+							}))),
+					_Utils_Tuple2(
+					'link',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'link',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arRest($author$project$LangInterpreter$anInline),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$aStr),
+								A2(
+									$author$project$LangInterpreter$arAnd,
+									$author$project$LangInterpreter$getCallSite,
+									$author$project$LangInterpreter$arConst(
+										F3(
+											function (cs, anchor, vs) {
+												return A2(
+													$author$project$LangInterpreter$VisVal,
+													cs,
+													$author$project$LangInterpreter$InlineVis(
+														A2($author$project$LangInterpreter$LinkV, anchor, vs)));
+											}))))))),
+					_Utils_Tuple2(
+					'image',
+					A2(
+						$author$project$LangInterpreter$buildFn,
+						'image',
+						A2(
+							$author$project$LangInterpreter$arAnd,
+							$author$project$LangInterpreter$arChomp($author$project$LangInterpreter$aStr),
+							A2(
+								$author$project$LangInterpreter$arAnd,
+								$author$project$LangInterpreter$getCallSite,
+								$author$project$LangInterpreter$arConst(
+									F2(
+										function (cs, url) {
+											return A2(
+												$author$project$LangInterpreter$VisVal,
+												cs,
+												$author$project$LangInterpreter$BlockVis(
+													$author$project$LangInterpreter$ImageV(url)));
+										}))))))
+				]))
+	});
+var $author$project$LangInterpreter$UnknownName = F2(
+	function (a, b) {
+		return {$: 'UnknownName', a: a, b: b};
+	});
+var $author$project$LangInterpreter$debugInfo = function (val) {
 	switch (val.$) {
 		case 'StrVal':
 			var d = val.a;
@@ -11351,382 +11887,13 @@ var $author$project$Interpreter$debugInfo = function (val) {
 			return d;
 	}
 };
-var $author$project$Interpreter$expectInline = function (vis) {
-	_v0$2:
-	while (true) {
-		switch (vis.$) {
-			case 'VisVal':
-				if (vis.b.$ === 'InlineVis') {
-					var v = vis.b.a;
-					return $elm$core$Result$Ok(v);
-				} else {
-					break _v0$2;
-				}
-			case 'StrVal':
-				var s = vis.b;
-				return $elm$core$Result$Ok(
-					$author$project$Interpreter$TextV(s));
-			default:
-				break _v0$2;
-		}
-	}
-	var other = vis;
-	return $elm$core$Result$Err(
-		A2(
-			$author$project$Interpreter$TypeMismatch,
-			$author$project$Interpreter$debugInfo(other),
-			'Expected an inline element'));
-};
-var $elm$core$Result$map = F2(
-	function (func, ra) {
-		if (ra.$ === 'Ok') {
-			var a = ra.a;
-			return $elm$core$Result$Ok(
-				func(a));
-		} else {
-			var e = ra.a;
-			return $elm$core$Result$Err(e);
-		}
-	});
-var $author$project$Interpreter$resultSeqHelp = F2(
-	function (rs, acc) {
-		resultSeqHelp:
-		while (true) {
-			if (!rs.b) {
-				return $elm$core$Result$Ok(acc);
-			} else {
-				var x = rs.a;
-				var xs = rs.b;
-				var _v1 = x(_Utils_Tuple0);
-				if (_v1.$ === 'Ok') {
-					var a = _v1.a;
-					var $temp$rs = xs,
-						$temp$acc = A2($elm$core$List$cons, a, acc);
-					rs = $temp$rs;
-					acc = $temp$acc;
-					continue resultSeqHelp;
-				} else {
-					var e = _v1.a;
-					return $elm$core$Result$Err(e);
-				}
-			}
-		}
-	});
-var $author$project$Interpreter$resultSeq = function (rs) {
-	return A2(
-		$elm$core$Result$map,
-		$elm$core$List$reverse,
-		A2($author$project$Interpreter$resultSeqHelp, rs, _List_Nil));
-};
-var $author$project$Interpreter$expectInlines = function (exprs) {
-	return $author$project$Interpreter$resultSeq(
-		A2(
-			$elm$core$List$map,
-			F2(
-				function (val, _v0) {
-					return $author$project$Interpreter$expectInline(val);
-				}),
-			exprs));
-};
-var $elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, dict) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($elm$core$Dict$insert, key, value, dict);
-			}),
-		$elm$core$Dict$empty,
-		assocs);
-};
-var $author$project$Interpreter$InlineVis = function (a) {
-	return {$: 'InlineVis', a: a};
-};
-var $author$project$Interpreter$expectVis = function (val) {
-	switch (val.$) {
-		case 'VisVal':
-			var v = val.b;
-			return $elm$core$Result$Ok(v);
-		case 'StrVal':
-			var s = val.b;
-			return $elm$core$Result$Ok(
-				$author$project$Interpreter$InlineVis(
-					$author$project$Interpreter$TextV(s)));
-		default:
-			var other = val;
-			return $elm$core$Result$Err(
-				A2(
-					$author$project$Interpreter$TypeMismatch,
-					$author$project$Interpreter$debugInfo(other),
-					'Expected a Vis'));
-	}
-};
-var $author$project$Interpreter$expectVisuals = function (exprs) {
-	return $author$project$Interpreter$resultSeq(
-		A2(
-			$elm$core$List$map,
-			F2(
-				function (val, _v0) {
-					return $author$project$Interpreter$expectVis(val);
-				}),
-			exprs));
-};
-var $author$project$Interpreter$manyBlockFun = F2(
-	function (name, impl) {
-		return A2(
-			$author$project$Interpreter$FnVal,
-			$author$project$Interpreter$builtinDebug(name),
-			F3(
-				function (ctx, callSite, vals) {
-					return A2(
-						$elm$core$Result$map,
-						function (vs) {
-							return _Utils_Tuple2(
-								A2(
-									$author$project$Interpreter$VisVal,
-									callSite,
-									$author$project$Interpreter$BlockVis(
-										impl(vs))),
-								ctx);
-						},
-						$author$project$Interpreter$expectVisuals(vals));
-				}));
-	});
-var $author$project$Interpreter$manyInlineFun = F2(
-	function (name, impl) {
-		return A2(
-			$author$project$Interpreter$FnVal,
-			$author$project$Interpreter$builtinDebug(name),
-			F3(
-				function (ctx, callSite, vals) {
-					return A2(
-						$elm$core$Result$map,
-						function (vs) {
-							return _Utils_Tuple2(
-								A2(
-									$author$project$Interpreter$VisVal,
-									callSite,
-									$author$project$Interpreter$InlineVis(
-										impl(vs))),
-								ctx);
-						},
-						$author$project$Interpreter$expectInlines(vals));
-				}));
-	});
-var $author$project$Interpreter$manyInlineFunTagged = F2(
-	function (name, impl) {
-		return A2(
-			$author$project$Interpreter$FnVal,
-			$author$project$Interpreter$builtinDebug(name),
-			F3(
-				function (ctx, callSite, vals) {
-					if (!vals.b) {
-						return $elm$core$Result$Err(
-							$author$project$Interpreter$WrongArgCount(callSite));
-					} else {
-						var x = vals.a;
-						var xs = vals.b;
-						if (x.$ === 'StrVal') {
-							var s = x.b;
-							return A2(
-								$elm$core$Result$map,
-								function (vs) {
-									return _Utils_Tuple2(
-										A2(
-											$author$project$Interpreter$VisVal,
-											callSite,
-											$author$project$Interpreter$InlineVis(
-												A2(impl, s, vs))),
-										ctx);
-								},
-								$author$project$Interpreter$expectInlines(xs));
-						} else {
-							return $elm$core$Result$Err(
-								A2($author$project$Interpreter$TypeMismatch, callSite, 'Expected a string as the first argument'));
-						}
-					}
-				}));
-	});
-var $author$project$Interpreter$defaultCtx = $author$project$Interpreter$EvalContext(
-	{
-		names: $elm$core$Dict$fromList(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'emdash',
-					A2(
-						$author$project$Interpreter$StrVal,
-						$author$project$Interpreter$builtinDebug('emdash'),
-						'—')),
-					_Utils_Tuple2(
-					'article',
-					A2($author$project$Interpreter$manyBlockFun, 'article', $author$project$Interpreter$ColumnV)),
-					_Utils_Tuple2(
-					'col',
-					A2($author$project$Interpreter$manyBlockFun, 'col', $author$project$Interpreter$ColumnV)),
-					_Utils_Tuple2(
-					'bullet-list',
-					A2($author$project$Interpreter$manyBlockFun, 'bullet-list', $author$project$Interpreter$UnorderedListV)),
-					_Utils_Tuple2(
-					'examine',
-					A2($author$project$Interpreter$manyBlockFun, 'examine', $author$project$Interpreter$ColumnV)),
-					_Utils_Tuple2(
-					'row',
-					A2($author$project$Interpreter$manyBlockFun, 'row', $author$project$Interpreter$RowV)),
-					_Utils_Tuple2(
-					'para',
-					A2(
-						$author$project$Interpreter$FnVal,
-						$author$project$Interpreter$builtinDebug('para'),
-						F3(
-							function (ctx, callSite, vals) {
-								return A2(
-									$elm$core$Result$map,
-									function (vs) {
-										return _Utils_Tuple2(
-											A2(
-												$author$project$Interpreter$VisVal,
-												callSite,
-												$author$project$Interpreter$BlockVis(
-													$author$project$Interpreter$ParagraphV(vs))),
-											ctx);
-									},
-									$author$project$Interpreter$expectInlines(vals));
-							}))),
-					_Utils_Tuple2(
-					'code',
-					A2($author$project$Interpreter$manyInlineFun, 'code', $author$project$Interpreter$InlineCodeV)),
-					_Utils_Tuple2(
-					'code-block',
-					A2($author$project$Interpreter$manyBlockFun, 'code', $author$project$Interpreter$CodeblockV)),
-					_Utils_Tuple2(
-					'italic',
-					A2($author$project$Interpreter$manyInlineFun, 'italic', $author$project$Interpreter$ItalicV)),
-					_Utils_Tuple2(
-					'term',
-					A2($author$project$Interpreter$manyInlineFun, 'term', $author$project$Interpreter$ItalicV)),
-					_Utils_Tuple2(
-					'aside',
-					A2(
-						$author$project$Interpreter$FnVal,
-						$author$project$Interpreter$builtinDebug('aside'),
-						F3(
-							function (ctx, callSite, args) {
-								if (args.b && (!args.b.b)) {
-									if ((args.a.$ === 'VisVal') && (args.a.b.$ === 'BlockVis')) {
-										var _v1 = args.a;
-										var b = _v1.b.a;
-										return $elm$core$Result$Ok(
-											_Utils_Tuple2(
-												A2(
-													$author$project$Interpreter$VisVal,
-													callSite,
-													$author$project$Interpreter$BlockVis(
-														$author$project$Interpreter$AsideV(b))),
-												ctx));
-									} else {
-										return $elm$core$Result$Err(
-											A2($author$project$Interpreter$TypeMismatch, callSite, 'Expected a block element'));
-									}
-								} else {
-									return $elm$core$Result$Err(
-										$author$project$Interpreter$WrongArgCount(callSite));
-								}
-							}))),
-					_Utils_Tuple2(
-					'anchor',
-					A2(
-						$author$project$Interpreter$FnVal,
-						$author$project$Interpreter$builtinDebug('anchor'),
-						F3(
-							function (ctx, callSite, args) {
-								if ((args.b && args.b.b) && (!args.b.b.b)) {
-									if (((args.a.$ === 'StrVal') && (args.b.a.$ === 'VisVal')) && (args.b.a.b.$ === 'BlockVis')) {
-										var _v3 = args.a;
-										var tag = _v3.b;
-										var _v4 = args.b;
-										var _v5 = _v4.a;
-										var b = _v5.b.a;
-										return $elm$core$Result$Ok(
-											_Utils_Tuple2(
-												A2(
-													$author$project$Interpreter$VisVal,
-													callSite,
-													$author$project$Interpreter$BlockVis(
-														A2($author$project$Interpreter$AnchorV, tag, b))),
-												ctx));
-									} else {
-										var _v6 = args.b;
-										return $elm$core$Result$Err(
-											A2($author$project$Interpreter$TypeMismatch, callSite, 'Expected a string and a block element'));
-									}
-								} else {
-									return $elm$core$Result$Err(
-										$author$project$Interpreter$WrongArgCount(callSite));
-								}
-							}))),
-					_Utils_Tuple2(
-					'comment',
-					A2(
-						$author$project$Interpreter$FnVal,
-						$author$project$Interpreter$builtinDebug('comment'),
-						F3(
-							function (ctx, callSite, _v7) {
-								return $elm$core$Result$Ok(
-									_Utils_Tuple2(
-										A2($author$project$Interpreter$VisVal, callSite, $author$project$Interpreter$NoneV),
-										ctx));
-							}))),
-					_Utils_Tuple2(
-					'link',
-					A2($author$project$Interpreter$manyInlineFunTagged, 'link', $author$project$Interpreter$LinkV)),
-					_Utils_Tuple2(
-					'image',
-					A2(
-						$author$project$Interpreter$FnVal,
-						$author$project$Interpreter$builtinDebug('image'),
-						F3(
-							function (ctx, callSite, args) {
-								if (args.b) {
-									if (!args.b.b) {
-										if (args.a.$ === 'StrVal') {
-											var _v9 = args.a;
-											var s = _v9.b;
-											return $elm$core$Result$Ok(
-												_Utils_Tuple2(
-													A2(
-														$author$project$Interpreter$VisVal,
-														callSite,
-														$author$project$Interpreter$BlockVis(
-															$author$project$Interpreter$ImageV(s))),
-													ctx));
-										} else {
-											return $elm$core$Result$Err(
-												A2($author$project$Interpreter$TypeMismatch, callSite, 'Expected a string for `image`'));
-										}
-									} else {
-										return $elm$core$Result$Err(
-											$author$project$Interpreter$WrongArgCount(callSite));
-									}
-								} else {
-									return $elm$core$Result$Err(
-										$author$project$Interpreter$WrongArgCount(callSite));
-								}
-							})))
-				]))
-	});
-var $author$project$Interpreter$UnknownName = F2(
-	function (a, b) {
-		return {$: 'UnknownName', a: a, b: b};
-	});
-var $author$project$Interpreter$UserExpr = function (a) {
+var $author$project$LangInterpreter$UserExpr = function (a) {
 	return {$: 'UserExpr', a: a};
 };
-var $author$project$Interpreter$posDebug = function (pos) {
-	return $author$project$Interpreter$UserExpr(pos);
+var $author$project$LangInterpreter$posDebug = function (pos) {
+	return $author$project$LangInterpreter$UserExpr(pos);
 };
-var $author$project$Interpreter$evalInContext = F2(
+var $author$project$LangInterpreter$evalInContext = F2(
 	function (_v3, expr) {
 		var ctx = _v3.a;
 		switch (expr.$) {
@@ -11736,10 +11903,10 @@ var $author$project$Interpreter$evalInContext = F2(
 				return $elm$core$Result$Ok(
 					_Utils_Tuple2(
 						A2(
-							$author$project$Interpreter$StrVal,
-							$author$project$Interpreter$posDebug(pos),
+							$author$project$LangInterpreter$StrVal,
+							$author$project$LangInterpreter$posDebug(pos),
 							str),
-						$author$project$Interpreter$EvalContext(ctx)));
+						$author$project$LangInterpreter$EvalContext(ctx)));
 			case 'NameE':
 				var pos = expr.a;
 				var name = expr.b;
@@ -11749,12 +11916,12 @@ var $author$project$Interpreter$evalInContext = F2(
 					return $elm$core$Result$Ok(
 						_Utils_Tuple2(
 							val,
-							$author$project$Interpreter$EvalContext(ctx)));
+							$author$project$LangInterpreter$EvalContext(ctx)));
 				} else {
 					return $elm$core$Result$Err(
 						A2(
-							$author$project$Interpreter$UnknownName,
-							$author$project$Interpreter$posDebug(pos),
+							$author$project$LangInterpreter$UnknownName,
+							$author$project$LangInterpreter$posDebug(pos),
 							name));
 				}
 			default:
@@ -11767,8 +11934,8 @@ var $author$project$Interpreter$evalInContext = F2(
 						var _v7 = _v6.a;
 						var run = _v7.b;
 						var _v8 = A2(
-							$author$project$Interpreter$seqEval,
-							$author$project$Interpreter$EvalContext(ctx),
+							$author$project$LangInterpreter$seqEval,
+							$author$project$LangInterpreter$EvalContext(ctx),
 							argExprs);
 						if (_v8.$ === 'Ok') {
 							var _v9 = _v8.a;
@@ -11777,7 +11944,7 @@ var $author$project$Interpreter$evalInContext = F2(
 							return A3(
 								run,
 								newCtx,
-								$author$project$Interpreter$posDebug(pos),
+								$author$project$LangInterpreter$posDebug(pos),
 								vals);
 						} else {
 							var e = _v8.a;
@@ -11787,20 +11954,20 @@ var $author$project$Interpreter$evalInContext = F2(
 						var val = _v6.a;
 						return $elm$core$Result$Err(
 							A2(
-								$author$project$Interpreter$TypeMismatch,
-								$author$project$Interpreter$debugInfo(val),
+								$author$project$LangInterpreter$TypeMismatch,
+								$author$project$LangInterpreter$debugInfo(val),
 								'I only know how to call functions'));
 					}
 				} else {
 					return $elm$core$Result$Err(
 						A2(
-							$author$project$Interpreter$UnknownName,
-							$author$project$Interpreter$posDebug(pos),
+							$author$project$LangInterpreter$UnknownName,
+							$author$project$LangInterpreter$posDebug(pos),
 							funName));
 				}
 		}
 	});
-var $author$project$Interpreter$seqEval = F2(
+var $author$project$LangInterpreter$seqEval = F2(
 	function (ctx, exprs) {
 		if (!exprs.b) {
 			return $elm$core$Result$Ok(
@@ -11808,7 +11975,7 @@ var $author$project$Interpreter$seqEval = F2(
 		} else {
 			var e = exprs.a;
 			var es = exprs.b;
-			var _v1 = A2($author$project$Interpreter$evalInContext, ctx, e);
+			var _v1 = A2($author$project$LangInterpreter$evalInContext, ctx, e);
 			if (_v1.$ === 'Ok') {
 				var _v2 = _v1.a;
 				var val = _v2.a;
@@ -11817,7 +11984,7 @@ var $author$project$Interpreter$seqEval = F2(
 					$elm$core$Result$map,
 					$elm$core$Tuple$mapFirst(
 						$elm$core$List$cons(val)),
-					A2($author$project$Interpreter$seqEval, newCtx, es));
+					A2($author$project$LangInterpreter$seqEval, newCtx, es));
 			} else {
 				var err = _v1.a;
 				return $elm$core$Result$Err(err);
@@ -11942,68 +12109,47 @@ var $elm$parser$Parser$Advanced$andThen = F2(
 			});
 	});
 var $elm$parser$Parser$andThen = $elm$parser$Parser$Advanced$andThen;
-var $author$project$Pts$CallE = F3(
+var $author$project$LangParser$CallE = F3(
 	function (a, b, c) {
 		return {$: 'CallE', a: a, b: b, c: c};
 	});
-var $author$project$Pts$NameE = F2(
+var $author$project$LangParser$NameE = F2(
 	function (a, b) {
 		return {$: 'NameE', a: a, b: b};
 	});
-var $author$project$Pts$StrE = F2(
+var $author$project$LangParser$StrE = F2(
 	function (a, b) {
 		return {$: 'StrE', a: a, b: b};
 	});
-var $elm$core$Result$andThen = F2(
-	function (callback, result) {
-		if (result.$ === 'Ok') {
-			var value = result.a;
-			return callback(value);
-		} else {
-			var msg = result.a;
-			return $elm$core$Result$Err(msg);
-		}
-	});
-var $elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return $elm$core$Result$Err(
-				f(e));
-		}
-	});
-var $author$project$Pts$posRepr = function (_v0) {
+var $author$project$LangParser$posRepr = function (_v0) {
 	var line = _v0.a.line;
 	return '(line: ' + ($elm$core$String$fromInt(line) + ')');
 };
-var $author$project$Pts$tokenRepr = function (tok) {
+var $author$project$LangParser$tokenRepr = function (tok) {
 	switch (tok.$) {
 		case 'LeftParen':
 			var pos = tok.a;
-			return 'LeftParen @' + $author$project$Pts$posRepr(pos);
+			return 'LeftParen @' + $author$project$LangParser$posRepr(pos);
 		case 'RightParen':
 			var pos = tok.a;
-			return 'RightParen @' + $author$project$Pts$posRepr(pos);
+			return 'RightParen @' + $author$project$LangParser$posRepr(pos);
 		case 'Identifier':
 			var pos = tok.a;
 			var s = tok.b;
 			return '(Identifier ' + (A2(
 				$elm$json$Json$Encode$encode,
 				0,
-				$elm$json$Json$Encode$string(s)) + (' @' + ($author$project$Pts$posRepr(pos) + ')')));
+				$elm$json$Json$Encode$string(s)) + (' @' + ($author$project$LangParser$posRepr(pos) + ')')));
 		default:
 			var pos = tok.a;
 			var s = tok.b;
 			return '(Literal ' + (A2(
 				$elm$json$Json$Encode$encode,
 				0,
-				$elm$json$Json$Encode$string(s)) + (' @' + ($author$project$Pts$posRepr(pos) + ')')));
+				$elm$json$Json$Encode$string(s)) + (' @' + ($author$project$LangParser$posRepr(pos) + ')')));
 	}
 };
-var $author$project$Pts$consumeExpr = function (tokens) {
+var $author$project$LangParser$consumeExpr = function (tokens) {
 	if (!tokens.b) {
 		return $elm$core$Result$Err('Unexpected end of input');
 	} else {
@@ -12011,7 +12157,7 @@ var $author$project$Pts$consumeExpr = function (tokens) {
 			case 'RightParen':
 				var pos = tokens.a.a;
 				return $elm$core$Result$Err(
-					'Unmatched ) @' + $author$project$Pts$posRepr(pos));
+					'Unmatched ) @' + $author$project$LangParser$posRepr(pos));
 			case 'Literal':
 				var _v7 = tokens.a;
 				var pos = _v7.a;
@@ -12019,7 +12165,7 @@ var $author$project$Pts$consumeExpr = function (tokens) {
 				var rest = tokens.b;
 				return $elm$core$Result$Ok(
 					_Utils_Tuple2(
-						A2($author$project$Pts$StrE, pos, s),
+						A2($author$project$LangParser$StrE, pos, s),
 						rest));
 			case 'Identifier':
 				var _v8 = tokens.a;
@@ -12028,7 +12174,7 @@ var $author$project$Pts$consumeExpr = function (tokens) {
 				var rest = tokens.b;
 				return $elm$core$Result$Ok(
 					_Utils_Tuple2(
-						A2($author$project$Pts$NameE, pos, s),
+						A2($author$project$LangParser$NameE, pos, s),
 						rest));
 			default:
 				var pos = tokens.a.a;
@@ -12036,13 +12182,13 @@ var $author$project$Pts$consumeExpr = function (tokens) {
 				return A2(
 					$elm$core$Result$mapError,
 					function (s) {
-						return s + ('(while parsing call at ' + ($author$project$Pts$posRepr(pos) + ')'));
+						return s + ('(while parsing call at ' + ($author$project$LangParser$posRepr(pos) + ')'));
 					},
-					$author$project$Pts$parseCall(rest));
+					$author$project$LangParser$parseCall(rest));
 		}
 	}
 };
-var $author$project$Pts$parseCall = function (tokens) {
+var $author$project$LangParser$parseCall = function (tokens) {
 	if (!tokens.b) {
 		return $elm$core$Result$Err('unexpected EOI while parsing a call');
 	} else {
@@ -12058,22 +12204,22 @@ var $author$project$Pts$parseCall = function (tokens) {
 						var args = _v5.a;
 						var rem = _v5.b;
 						return _Utils_Tuple2(
-							A3($author$project$Pts$CallE, pos, fname, args),
+							A3($author$project$LangParser$CallE, pos, fname, args),
 							rem);
 					},
-					$author$project$Pts$parseCallArgs(rest));
+					$author$project$LangParser$parseCallArgs(rest));
 			case 'RightParen':
 				var pos = tokens.a.a;
 				return $elm$core$Result$Err(
-					'Empty lists are not allowed @' + $author$project$Pts$posRepr(pos));
+					'Empty lists are not allowed @' + $author$project$LangParser$posRepr(pos));
 			default:
 				var badToken = tokens.a;
 				return $elm$core$Result$Err(
-					'Expected a function name, got: ' + $author$project$Pts$tokenRepr(badToken));
+					'Expected a function name, got: ' + $author$project$LangParser$tokenRepr(badToken));
 		}
 	}
 };
-var $author$project$Pts$parseCallArgs = function (tokens) {
+var $author$project$LangParser$parseCallArgs = function (tokens) {
 	if (!tokens.b) {
 		return $elm$core$Result$Err('unexpected EOI while parsing call arguments');
 	} else {
@@ -12097,9 +12243,9 @@ var $author$project$Pts$parseCallArgs = function (tokens) {
 								A2($elm$core$List$cons, expr, args),
 								rem2);
 						},
-						$author$project$Pts$parseCallArgs(rem1));
+						$author$project$LangParser$parseCallArgs(rem1));
 				},
-				$author$project$Pts$consumeExpr(rest));
+				$author$project$LangParser$consumeExpr(rest));
 		}
 	}
 };
@@ -12313,21 +12459,21 @@ var $elm$parser$Parser$Advanced$chompWhile = function (isGood) {
 		});
 };
 var $elm$parser$Parser$chompWhile = $elm$parser$Parser$Advanced$chompWhile;
-var $author$project$Pts$Identifier = F2(
+var $author$project$LangParser$Identifier = F2(
 	function (a, b) {
 		return {$: 'Identifier', a: a, b: b};
 	});
-var $author$project$Pts$LeftParen = function (a) {
+var $author$project$LangParser$LeftParen = function (a) {
 	return {$: 'LeftParen', a: a};
 };
-var $author$project$Pts$Literal = F2(
+var $author$project$LangParser$Literal = F2(
 	function (a, b) {
 		return {$: 'Literal', a: a, b: b};
 	});
-var $author$project$Pts$RightParen = function (a) {
+var $author$project$LangParser$RightParen = function (a) {
 	return {$: 'RightParen', a: a};
 };
-var $author$project$Pts$Pos = function (a) {
+var $author$project$LangParser$Pos = function (a) {
 	return {$: 'Pos', a: a};
 };
 var $elm$parser$Parser$Advanced$getRow = $elm$parser$Parser$Advanced$Parser(
@@ -12335,10 +12481,10 @@ var $elm$parser$Parser$Advanced$getRow = $elm$parser$Parser$Advanced$Parser(
 		return A3($elm$parser$Parser$Advanced$Good, false, s.row, s);
 	});
 var $elm$parser$Parser$getRow = $elm$parser$Parser$Advanced$getRow;
-var $author$project$Pts$currentPos = A2(
+var $author$project$LangParser$currentPos = A2(
 	$elm$parser$Parser$map,
 	function (row) {
-		return $author$project$Pts$Pos(
+		return $author$project$LangParser$Pos(
 			{line: row});
 	},
 	$elm$parser$Parser$getRow);
@@ -12410,7 +12556,7 @@ var $elm$parser$Parser$variable = function (i) {
 	return $elm$parser$Parser$Advanced$variable(
 		{expecting: $elm$parser$Parser$ExpectingVariable, inner: i.inner, reserved: i.reserved, start: i.start});
 };
-var $author$project$Pts$identifier = $elm$parser$Parser$variable(
+var $author$project$LangParser$identifier = $elm$parser$Parser$variable(
 	{
 		inner: function (c) {
 			return $elm$core$Char$isLower(c) || ($elm$core$Char$isDigit(c) || _Utils_eq(
@@ -12474,7 +12620,7 @@ var $elm$parser$Parser$Advanced$getChompedString = function (parser) {
 	return A2($elm$parser$Parser$Advanced$mapChompedString, $elm$core$Basics$always, parser);
 };
 var $elm$parser$Parser$getChompedString = $elm$parser$Parser$Advanced$getChompedString;
-var $author$project$Pts$char = function (pred) {
+var $author$project$LangParser$char = function (pred) {
 	return A2(
 		$elm$parser$Parser$andThen,
 		A2(
@@ -12527,7 +12673,7 @@ var $elm$parser$Parser$symbol = function (str) {
 			str,
 			$elm$parser$Parser$ExpectingSymbol(str)));
 };
-var $author$project$Pts$literalChar = $elm$parser$Parser$oneOf(
+var $author$project$LangParser$literalChar = $elm$parser$Parser$oneOf(
 	_List_fromArray(
 		[
 			A2(
@@ -12540,7 +12686,7 @@ var $author$project$Pts$literalChar = $elm$parser$Parser$oneOf(
 			$elm$core$Basics$always(
 				_Utils_chr('\"')),
 			$elm$parser$Parser$symbol('\\\"')),
-			$author$project$Pts$char(
+			$author$project$LangParser$char(
 			function (c) {
 				return (!_Utils_eq(
 					c,
@@ -12755,19 +12901,19 @@ var $elm$parser$Parser$sequence = function (i) {
 			trailing: $elm$parser$Parser$toAdvancedTrailing(i.trailing)
 		});
 };
-var $author$project$Pts$literal = A2(
+var $author$project$LangParser$literal = A2(
 	$elm$parser$Parser$map,
 	A2($elm$core$List$foldr, $elm$core$String$cons, ''),
 	$elm$parser$Parser$sequence(
 		{
 			end: '\"',
-			item: $author$project$Pts$literalChar,
+			item: $author$project$LangParser$literalChar,
 			separator: '',
 			spaces: $elm$parser$Parser$succeed(_Utils_Tuple0),
 			start: '\"',
 			trailing: $elm$parser$Parser$Optional
 		}));
-var $author$project$Pts$oneToken = A2(
+var $author$project$LangParser$oneToken = A2(
 	$elm$parser$Parser$keeper,
 	A2(
 		$elm$parser$Parser$ignorer,
@@ -12781,13 +12927,13 @@ var $author$project$Pts$oneToken = A2(
 				A2(
 				$elm$parser$Parser$andThen,
 				function (_v0) {
-					return A2($elm$parser$Parser$map, $author$project$Pts$LeftParen, $author$project$Pts$currentPos);
+					return A2($elm$parser$Parser$map, $author$project$LangParser$LeftParen, $author$project$LangParser$currentPos);
 				},
 				$elm$parser$Parser$symbol('(')),
 				A2(
 				$elm$parser$Parser$andThen,
 				function (_v1) {
-					return A2($elm$parser$Parser$map, $author$project$Pts$RightParen, $author$project$Pts$currentPos);
+					return A2($elm$parser$Parser$map, $author$project$LangParser$RightParen, $author$project$LangParser$currentPos);
 				},
 				$elm$parser$Parser$symbol(')')),
 				A2(
@@ -12796,24 +12942,24 @@ var $author$project$Pts$oneToken = A2(
 					return A2(
 						$elm$parser$Parser$map,
 						function (p) {
-							return A2($author$project$Pts$Identifier, p, s);
+							return A2($author$project$LangParser$Identifier, p, s);
 						},
-						$author$project$Pts$currentPos);
+						$author$project$LangParser$currentPos);
 				},
-				$author$project$Pts$identifier),
+				$author$project$LangParser$identifier),
 				A2(
 				$elm$parser$Parser$andThen,
 				function (s) {
 					return A2(
 						$elm$parser$Parser$map,
 						function (p) {
-							return A2($author$project$Pts$Literal, p, s);
+							return A2($author$project$LangParser$Literal, p, s);
 						},
-						$author$project$Pts$currentPos);
+						$author$project$LangParser$currentPos);
 				},
-				$author$project$Pts$literal)
+				$author$project$LangParser$literal)
 			])));
-var $author$project$Pts$codeLine = A2(
+var $author$project$LangParser$codeLine = A2(
 	$elm$parser$Parser$map,
 	$elm$core$List$reverse,
 	A2(
@@ -12847,14 +12993,14 @@ var $author$project$Pts$codeLine = A2(
 								return $elm$parser$Parser$Loop(
 									A2($elm$core$List$cons, t, ts));
 							},
-							$author$project$Pts$oneToken)
+							$author$project$LangParser$oneToken)
 						])));
 		}));
-var $author$project$Pts$Zero = {$: 'Zero'};
-var $author$project$Pts$Suc = function (a) {
+var $author$project$LangParser$Zero = {$: 'Zero'};
+var $author$project$LangParser$Suc = function (a) {
 	return {$: 'Suc', a: a};
 };
-var $author$project$Pts$balancedParensHelp = function (_v0) {
+var $author$project$LangParser$balancedParensHelp = function (_v0) {
 	var depth = _v0.a;
 	var acc = _v0.b;
 	return A2(
@@ -12881,8 +13027,8 @@ var $author$project$Pts$balancedParensHelp = function (_v0) {
 							},
 							A2(
 								$elm$parser$Parser$map,
-								$author$project$Pts$Identifier(pos),
-								$author$project$Pts$identifier)),
+								$author$project$LangParser$Identifier(pos),
+								$author$project$LangParser$identifier)),
 							A2(
 							$elm$parser$Parser$map,
 							function (tok) {
@@ -12893,17 +13039,17 @@ var $author$project$Pts$balancedParensHelp = function (_v0) {
 							},
 							A2(
 								$elm$parser$Parser$map,
-								$author$project$Pts$Literal(pos),
-								$author$project$Pts$literal)),
+								$author$project$LangParser$Literal(pos),
+								$author$project$LangParser$literal)),
 							A2(
 							$elm$parser$Parser$map,
 							$elm$core$Basics$always(
 								$elm$parser$Parser$Loop(
 									_Utils_Tuple2(
-										$author$project$Pts$Suc(depth),
+										$author$project$LangParser$Suc(depth),
 										A2(
 											$elm$core$List$cons,
-											$author$project$Pts$LeftParen(pos),
+											$author$project$LangParser$LeftParen(pos),
 											acc)))),
 							$elm$parser$Parser$symbol('(')),
 							A2(
@@ -12914,7 +13060,7 @@ var $author$project$Pts$balancedParensHelp = function (_v0) {
 										return $elm$parser$Parser$Done(
 											A2(
 												$elm$core$List$cons,
-												$author$project$Pts$RightParen(pos),
+												$author$project$LangParser$RightParen(pos),
 												acc));
 									} else {
 										var n = depth.a;
@@ -12923,16 +13069,16 @@ var $author$project$Pts$balancedParensHelp = function (_v0) {
 												n,
 												A2(
 													$elm$core$List$cons,
-													$author$project$Pts$RightParen(pos),
+													$author$project$LangParser$RightParen(pos),
 													acc)));
 									}
 								}()),
 							$elm$parser$Parser$symbol(')'))
 						])));
 		},
-		$author$project$Pts$currentPos);
+		$author$project$LangParser$currentPos);
 };
-var $author$project$Pts$balancedParens = A2(
+var $author$project$LangParser$balancedParens = A2(
 	$elm$parser$Parser$map,
 	$elm$core$List$reverse,
 	A2(
@@ -12945,13 +13091,13 @@ var $author$project$Pts$balancedParens = A2(
 					_Utils_chr(' ')))),
 		A2(
 			$elm$parser$Parser$loop,
-			_Utils_Tuple2($author$project$Pts$Zero, _List_Nil),
-			$author$project$Pts$balancedParensHelp)));
+			_Utils_Tuple2($author$project$LangParser$Zero, _List_Nil),
+			$author$project$LangParser$balancedParensHelp)));
 var $elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
 };
-var $author$project$Pts$proseLine = A2(
+var $author$project$LangParser$proseLine = A2(
 	$elm$parser$Parser$loop,
 	_List_Nil,
 	function (ts) {
@@ -12982,7 +13128,7 @@ var $author$project$Pts$proseLine = A2(
 									$elm$core$Basics$always(
 										_List_fromArray(
 											[
-												A2($author$project$Pts$Literal, pos, '$')
+												A2($author$project$LangParser$Literal, pos, '$')
 											])),
 									$elm$parser$Parser$symbol('$$')))),
 							A2(
@@ -13004,16 +13150,16 @@ var $author$project$Pts$proseLine = A2(
 												$elm$parser$Parser$map,
 												A2(
 													$elm$core$Basics$composeR,
-													$author$project$Pts$Identifier(pos),
+													$author$project$LangParser$Identifier(pos),
 													$elm$core$List$singleton),
-												$author$project$Pts$identifier),
+												$author$project$LangParser$identifier),
 												A2(
 												$elm$parser$Parser$map,
 												$elm$core$List$cons(
-													$author$project$Pts$LeftParen(pos)),
+													$author$project$LangParser$LeftParen(pos)),
 												A2(
 													$elm$parser$Parser$andThen,
-													$elm$core$Basics$always($author$project$Pts$balancedParens),
+													$elm$core$Basics$always($author$project$LangParser$balancedParens),
 													$elm$parser$Parser$symbol('(')))
 											]))))),
 							A2(
@@ -13028,7 +13174,7 @@ var $author$project$Pts$proseLine = A2(
 										return (s === '') ? $elm$parser$Parser$problem('bruh') : $elm$parser$Parser$succeed(
 											_List_fromArray(
 												[
-													A2($author$project$Pts$Literal, pos, s)
+													A2($author$project$LangParser$Literal, pos, s)
 												]));
 									},
 									$elm$parser$Parser$getChompedString(
@@ -13042,9 +13188,9 @@ var $author$project$Pts$proseLine = A2(
 											})))))
 						]));
 			},
-			$author$project$Pts$currentPos);
+			$author$project$LangParser$currentPos);
 	});
-var $author$project$Pts$sourceLineP = A2(
+var $author$project$LangParser$sourceLineP = A2(
 	$elm$parser$Parser$keeper,
 	A2(
 		$elm$parser$Parser$ignorer,
@@ -13061,17 +13207,17 @@ var $author$project$Pts$sourceLineP = A2(
 					$elm$parser$Parser$ignorer,
 					$elm$parser$Parser$succeed($elm$core$Basics$identity),
 					$elm$parser$Parser$symbol('| ')),
-				$author$project$Pts$proseLine),
+				$author$project$LangParser$proseLine),
 				A2(
 				$elm$parser$Parser$keeper,
 				A2(
 					$elm$parser$Parser$ignorer,
 					$elm$parser$Parser$succeed($elm$core$Basics$identity),
 					$elm$parser$Parser$symbol('|')),
-				$author$project$Pts$proseLine),
-				$author$project$Pts$codeLine
+				$author$project$LangParser$proseLine),
+				$author$project$LangParser$codeLine
 			])));
-var $author$project$Pts$tokenize = A2(
+var $author$project$LangParser$tokenize = A2(
 	$elm$parser$Parser$loop,
 	_List_Nil,
 	function (prev) {
@@ -13089,13 +13235,13 @@ var $author$project$Pts$tokenize = A2(
 					A2(
 						$elm$parser$Parser$map,
 						$elm$core$Basics$append(prev),
-						$author$project$Pts$sourceLineP))
+						$author$project$LangParser$sourceLineP))
 				]));
 	});
-var $author$project$Pts$oneExpr = A2(
+var $author$project$LangParser$oneExpr = A2(
 	$elm$parser$Parser$andThen,
 	function (tokens) {
-		var _v0 = $author$project$Pts$consumeExpr(tokens);
+		var _v0 = $author$project$LangParser$consumeExpr(tokens);
 		if (_v0.$ === 'Ok') {
 			if (!_v0.a.b.b) {
 				var _v1 = _v0.a;
@@ -13110,11 +13256,11 @@ var $author$project$Pts$oneExpr = A2(
 			return $elm$parser$Parser$problem(err);
 		}
 	},
-	$author$project$Pts$tokenize);
-var $author$project$Pts$program = A2(
+	$author$project$LangParser$tokenize);
+var $author$project$LangParser$program = A2(
 	$elm$parser$Parser$keeper,
 	$elm$parser$Parser$succeed($elm$core$Basics$identity),
-	A2($elm$parser$Parser$ignorer, $author$project$Pts$oneExpr, $elm$parser$Parser$end));
+	A2($elm$parser$Parser$ignorer, $author$project$LangParser$oneExpr, $elm$parser$Parser$end));
 var $elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
 		return {col: col, problem: problem, row: row};
@@ -13177,10 +13323,10 @@ var $elm$parser$Parser$run = F2(
 var $elm$core$Debug$toString = _Debug_toString;
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		var expr = A2($elm$parser$Parser$run, $author$project$Pts$program, msg);
+		var expr = A2($elm$parser$Parser$run, $author$project$LangParser$program, msg);
 		var document = A2(
 			$elm$core$Result$map,
-			$author$project$Interpreter$evalInContext($author$project$Interpreter$defaultCtx),
+			$author$project$LangInterpreter$evalInContext($author$project$LangInterpreter$defaultCtx),
 			expr);
 		return _Utils_update(
 			model,
@@ -14315,7 +14461,7 @@ var $mdgriffith$elm_ui$Element$padding = function (x) {
 			f,
 			f));
 };
-var $author$project$Interpreter$Missing = {$: 'Missing'};
+var $author$project$LangInterpreter$Missing = {$: 'Missing'};
 var $author$project$Main$unwrapVal = function (r) {
 	if (r.$ === 'Ok') {
 		var val = r.a;
@@ -14323,14 +14469,14 @@ var $author$project$Main$unwrapVal = function (r) {
 	} else {
 		var msg = r.a;
 		return A2(
-			$author$project$Interpreter$VisVal,
-			$author$project$Interpreter$Missing,
-			$author$project$Interpreter$BlockVis(
-				$author$project$Interpreter$CodeblockV(
+			$author$project$LangInterpreter$VisVal,
+			$author$project$LangInterpreter$Missing,
+			$author$project$LangInterpreter$BlockVis(
+				$author$project$LangInterpreter$CodeblockV(
 					_List_fromArray(
 						[
-							$author$project$Interpreter$InlineVis(
-							$author$project$Interpreter$TextV(msg))
+							$author$project$LangInterpreter$InlineVis(
+							$author$project$LangInterpreter$TextV(msg))
 						]))));
 	}
 };
