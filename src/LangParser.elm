@@ -235,10 +235,6 @@ proseLine =
                         P.oneOf
                             [ P.end |> P.map (always (P.Done ts))
                             , P.symbol "\n" |> P.map (always (P.Done ts))
-                            , P.symbol "$$"
-                                |> P.map (always [ Literal pos "$" ])
-                                |> P.map ((++) ts)
-                                |> P.map P.Loop
                             , P.succeed identity
                                 |. P.symbol "$"
                                 |= P.oneOf

@@ -141,6 +141,15 @@ evalInContext (EvalContext ctx) expr =
 
         CallE pos funName argExprs ->
             case Dict.get funName ctx.names of
+                Just (StrVal debug s) ->
+                    case argExprs of
+                        [] ->
+                            Ok ( StrVal debug s, EvalContext ctx )
+
+                        _ ->
+                            -- TODO: use TooManyArgs?..
+                            Err <| TypeMismatch debug "Can only 'call' a string in a no-arguments form, like (dollar)"
+
                 Just (FnVal _ run) ->
                     case seqEval (EvalContext ctx) argExprs of
                         Ok ( vals, newCtx ) ->
@@ -360,6 +369,9 @@ defaultCtx =
             Dict.fromList
                 [ ( "emdash"
                   , StrVal (builtinDebug "emdash") "—"
+                  )
+                , ( "dollar"
+                  , StrVal (builtinDebug "dollar") "$"
                   )
                 , ( "article"
                   , manyBlockFun "article" ColumnV
