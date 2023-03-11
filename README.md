@@ -17,7 +17,23 @@ Some vague properties that I'd like the language to eventually have:
     - [ ] generally make sub, sup & frac play better together
 
 - [ ] Better code editor, probably something with "custom elements" and CodeMirror 6
-- [ ] User-provided functions (macros?)
+
+- [ ] User-provided functions
+    - [X] First-order functions
+    - [X] Passing functions by argument
+    - [ ] Capturing closures
+
+- [ ] Possibly export the "reduced" article as an intermediate data structure
+
+    This is needed for alternative frontends (e.g. buildling a static HTML site)
+
+    - [ ] Making a 'table of contents'
+    - [ ] Generally figure out how to 'wire' stuff inside an article
+
+- [ ] Calling an external resource (like HTML)
+- [ ] Some basic data structures
+    - [ ] lists
+    - [ ] maps
 
 ## Demo
 

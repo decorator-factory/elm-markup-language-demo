@@ -1,0 +1,25 @@
+(article
+  (defun (section %title)
+    (row
+      (col "")
+      (col (bold %title))
+      (col "")))
+
+  (def two
+    "Zwei")
+
+  (defun (call-with-two %thing)
+    (%thing two))
+
+  (section "Chapter 1")
+  (para
+    | Never gonna give you up
+    )
+  (para
+    | Never gonna let you down
+    )
+  (section (cc "Chapter" (call-with-two italic)))
+  (para
+    | Never gonna run around and desert you
+    )
+)
