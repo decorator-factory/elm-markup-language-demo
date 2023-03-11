@@ -63,6 +63,7 @@ type Inline
     | BoldV (List Inline)
     | ItalicV (List Inline)
     | LinkV String (List Inline)
+    | FractionV { top : Inline, bottom : Inline, scale : Float }
 
 
 type Vis
@@ -440,6 +441,30 @@ defaultCtx =
                         (arConst (\cs url -> VisVal cs (BlockVis (ImageV url)))
                             |> arAnd getCallSite
                             |> arAnd (arChomp aStr)
+                        )
+                  )
+
+                -- Math stuff
+                , ( "frac"
+                  , buildFn "frac"
+                        (arConst
+                            (\cs top bottom ->
+                                VisVal cs (InlineVis (FractionV { top = top, bottom = bottom, scale = 0.85 }))
+                            )
+                            |> arAnd getCallSite
+                            |> arAnd (arChomp anInline)
+                            |> arAnd (arChomp anInline)
+                        )
+                  )
+                , ( "big-frac"
+                  , buildFn "big-frac"
+                        (arConst
+                            (\cs top bottom ->
+                                VisVal cs (InlineVis (FractionV { top = top, bottom = bottom, scale = 1.0 }))
+                            )
+                            |> arAnd getCallSite
+                            |> arAnd (arChomp anInline)
+                            |> arAnd (arChomp anInline)
                         )
                   )
                 ]

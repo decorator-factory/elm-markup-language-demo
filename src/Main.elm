@@ -8,8 +8,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
 import LangInterpreter as I
-import Parser
 import LangParser
+import Parser
 
 
 type alias Model =
@@ -98,6 +98,32 @@ viewInline vis =
                 { url = "#elm_vis__" ++ tag
                 , label = E.paragraph [ Font.bold ] (List.map viewInline vs)
                 }
+
+        I.FractionV { top, bottom, scale } ->
+            E.column
+                [ E.spacing 4
+                , E.htmlAttribute (Html.Attributes.style "vertical-align" "middle") -- enormous hack
+                , E.scale scale
+                ]
+                [ E.el
+                    [ E.alignBottom
+                    , E.centerX
+                    ]
+                    (viewInline top)
+                , E.el
+                    [ E.width E.fill
+                    , E.height E.shrink
+                    , Border.color (E.rgb255 30 30 30)
+                    , Border.width 1
+                    , E.paddingXY 4 0
+                    ]
+                    E.none
+                , E.el
+                    [ E.alignTop
+                    , E.centerX
+                    ]
+                    (viewInline bottom)
+                ]
 
 
 viewBlock : I.Block -> E.Element msg
