@@ -1,6 +1,6 @@
 module LangParser exposing
     ( Expr(..)
-    , Pos
+    , TextPos
     , Token(..)
     , consumeExpr
     , oneExpr
@@ -16,17 +16,17 @@ import Parser as P exposing ((|.), (|=), Parser)
 import Set
 
 
-type Pos
+type TextPos
     = Pos { line : Int }
 
 
-type Expr
-    = StrE Pos String
-    | NameE Pos String
-    | CallE Pos String (List Expr)
+type Expr loc
+    = StrE loc String
+    | NameE loc String
+    | CallE loc String (List (Expr loc))
 
 
-exprPos : Expr -> Pos
+exprPos : Expr loc -> loc
 exprPos expr =
     case expr of
         StrE pos _ -> pos
@@ -35,10 +35,10 @@ exprPos expr =
 
 
 type Token
-    = LeftParen Pos
-    | RightParen Pos
-    | Identifier Pos String
-    | Literal Pos String
+    = LeftParen TextPos
+    | RightParen TextPos
+    | Identifier TextPos String
+    | Literal TextPos String
 
 
 tokenize : P.Parser (List Token)
@@ -52,14 +52,14 @@ tokenize =
         )
 
 
-program : P.Parser Expr
+program : P.Parser (Expr TextPos)
 program =
     P.succeed identity
         |= oneExpr
         |. P.end
 
 
-oneExpr : P.Parser Expr
+oneExpr : P.Parser (Expr TextPos)
 oneExpr =
     tokenize
         |> P.andThen
@@ -76,12 +76,12 @@ oneExpr =
             )
 
 
-zeroPos : Pos
+zeroPos : TextPos
 zeroPos =
     Pos { line = 1 }
 
 
-posRepr : Pos -> String
+posRepr : TextPos -> String
 posRepr (Pos { line }) =
     "(line: " ++ String.fromInt line ++ ")"
 
@@ -102,7 +102,7 @@ tokenRepr tok =
             "(Literal " ++ Je.encode 0 (Je.string s) ++ " @" ++ posRepr pos ++ ")"
 
 
-consumeExpr : List Token -> Result String ( Expr, List Token )
+consumeExpr : List Token -> Result String ( Expr TextPos, List Token )
 consumeExpr tokens =
     case tokens of
         [] ->
@@ -121,7 +121,7 @@ consumeExpr tokens =
             parseCall rest |> Result.mapError (\s -> s ++ "(while parsing call at " ++ posRepr pos ++ ")")
 
 
-parseCall : List Token -> Result String ( Expr, List Token )
+parseCall : List Token -> Result String ( Expr TextPos, List Token )
 parseCall tokens =
     case tokens of
         [] ->
@@ -141,7 +141,7 @@ parseCall tokens =
             Err <| "Expected a function name, got: " ++ tokenRepr badToken
 
 
-parseCallArgs : List Token -> Result String ( List Expr, List Token )
+parseCallArgs : List Token -> Result String ( List (Expr TextPos), List Token )
 parseCallArgs tokens =
     case tokens of
         [] ->
@@ -200,7 +200,7 @@ literal =
         |> P.map (List.foldr String.cons "")
 
 
-currentPos : P.Parser Pos
+currentPos : P.Parser TextPos
 currentPos =
     P.getRow |> P.map (\row -> Pos { line = row })
 

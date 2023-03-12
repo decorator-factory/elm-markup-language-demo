@@ -12,8 +12,11 @@ import LangParser
 import Parser
 
 
+type alias Val = I.Val LangParser.TextPos
+
+
 type alias Model =
-    { draft : String, tokens : String, result : Result String I.Val }
+    { draft : String, tokens : String, result : Result String Val }
 
 
 main : Program () Model String
@@ -54,7 +57,7 @@ preFormatted =
     E.htmlAttribute (Html.Attributes.style "white-space" "pre")
 
 
-unwrapVal : Result String I.Val -> I.Val
+unwrapVal : Result String Val -> Val
 unwrapVal r =
     case r of
         Ok val ->
@@ -64,7 +67,7 @@ unwrapVal r =
             I.VisVal I.Missing (I.BlockVis (I.CodeblockV [ I.InlineVis <| I.TextV msg ]))
 
 
-viewVal : I.Val -> E.Element msg
+viewVal : Val -> E.Element msg
 viewVal val =
     case val of
         I.VisVal _ vis ->
