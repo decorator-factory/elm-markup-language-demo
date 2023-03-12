@@ -12,7 +12,7 @@ module LangInterpreter exposing
     )
 
 import Dict exposing (Dict)
-import LangParser exposing (Expr(..), TextPos, Token(..))
+import LangParser exposing (Expr(..), Token(..))
 
 
 type DebugInfo loc
@@ -93,20 +93,20 @@ type Val loc
     | MacroFnVal (DebugInfo loc) (MacroFnVal loc)
 
 
-reprDebug : DebugInfo loc -> String
-reprDebug debug =
+reprDebug : (loc -> String) -> DebugInfo loc -> String
+reprDebug locRepr debug =
     case debug of
         InExpr pos ->
-            LangParser.posRepr pos
+            locRepr pos
 
         InBuiltin { name } ->
             name
 
         CallingFrom { func, callSite } ->
-            "While calling <" ++ reprDebug func ++ ">: " ++ reprDebug callSite
+            "While calling <" ++ reprDebug locRepr func ++ ">: " ++ reprDebug locRepr callSite
 
         InUserFunction { origin } ->
-            "While calling function defined at " ++ reprDebug origin
+            "While calling function defined at " ++ reprDebug locRepr origin
 
         Missing ->
             "<?>"
@@ -153,7 +153,7 @@ seqEval eval ctx exprs =
 callFnByName :
     EvalFn loc
     -> EvalContext loc
-    -> TextPos
+    -> loc
     -> String
     -> List (Expr loc)
     -> Result (EvalError loc) ( Val loc, EvalContext loc )
@@ -169,7 +169,7 @@ callFnByName eval (EvalContext ctx) pos funName argExprs =
 callFnByValue :
     EvalFn loc
     -> EvalContext loc
-    -> TextPos
+    -> loc
     -> Val loc
     -> List (Expr loc)
     -> Result (EvalError loc) ( Val loc, EvalContext loc )
