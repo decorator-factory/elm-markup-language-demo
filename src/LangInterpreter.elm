@@ -12,40 +12,40 @@ module LangInterpreter exposing
     )
 
 import Dict exposing (Dict)
-import LangParser exposing (Expr(..), Pos, Token(..))
+import LangParser exposing (Expr(..), TextPos, Token(..))
 
 
-type DebugInfo
-    = InExpr Pos
-    | InUserFunction { origin : DebugInfo }
+type DebugInfo loc
+    = InExpr loc
+    | InUserFunction { origin : DebugInfo loc }
     | InBuiltin { name : String }
-    | CallingFrom { func : DebugInfo, callSite : DebugInfo }
+    | CallingFrom { func : DebugInfo loc, callSite : DebugInfo loc }
     | Missing
 
 
-posDebug : Pos -> DebugInfo
+posDebug : loc -> DebugInfo loc
 posDebug pos =
     InExpr pos
 
 
-builtinDebug : String -> DebugInfo
+builtinDebug : String -> DebugInfo loc
 builtinDebug name =
     InBuiltin { name = name }
 
 
-type EvalContext
+type EvalContext loc
     = EvalContext
-        { names : Dict String Val
+        { names : Dict String (Val loc)
         }
 
 
-type EvalError
-    = UnknownName DebugInfo String
-    | MacroError DebugInfo String
-    | NotImplemented DebugInfo String
-    | TooManyArgs ( Val, List Val ) DebugInfo
-    | NotEnoughArgs Int DebugInfo
-    | TypeMismatch DebugInfo String
+type EvalError loc
+    = UnknownName (DebugInfo loc) String
+    | MacroError (DebugInfo loc) String
+    | NotImplemented (DebugInfo loc) String
+    | TooManyArgs ( Val loc, List (Val loc) ) (DebugInfo loc)
+    | NotEnoughArgs Int (DebugInfo loc)
+    | TypeMismatch (DebugInfo loc) String
 
 
 type Block
@@ -77,15 +77,23 @@ type Vis
     | NoneV
 
 
-type Val
-    = StrVal DebugInfo String
-    | ListVal DebugInfo (List Val)
-    | VisVal DebugInfo Vis
-    | FnVal DebugInfo (EvalContext -> DebugInfo -> List Val -> Result EvalError ( Val, EvalContext ))
-    | MacroFnVal DebugInfo (EvalContext -> DebugInfo -> List Expr -> Result EvalError ( Val, EvalContext ))
+type alias FnVal loc =
+    EvalContext loc -> DebugInfo loc -> List (Val loc) -> Result (EvalError loc) ( Val loc, EvalContext loc )
 
 
-reprDebug : DebugInfo -> String
+type alias MacroFnVal loc =
+    EvalContext loc -> DebugInfo loc -> List (Expr loc) -> Result (EvalError loc) ( Val loc, EvalContext loc )
+
+
+type Val loc
+    = StrVal (DebugInfo loc) String
+    | ListVal (DebugInfo loc) (List (Val loc))
+    | VisVal (DebugInfo loc) Vis
+    | FnVal (DebugInfo loc) (FnVal loc)
+    | MacroFnVal (DebugInfo loc) (MacroFnVal loc)
+
+
+reprDebug : DebugInfo loc -> String
 reprDebug debug =
     case debug of
         InExpr pos ->
@@ -104,7 +112,7 @@ reprDebug debug =
             "<?>"
 
 
-debugInfo : Val -> DebugInfo
+debugInfo : Val loc -> DebugInfo loc
 debugInfo val =
     case val of
         StrVal d _ ->
@@ -123,11 +131,11 @@ debugInfo val =
             d
 
 
-type alias EvalFn =
-    EvalContext -> Expr -> Result EvalError ( Val, EvalContext )
+type alias EvalFn loc =
+    EvalContext loc -> Expr loc -> Result (EvalError loc) ( Val loc, EvalContext loc )
 
 
-seqEval : EvalFn -> EvalContext -> List Expr -> Result EvalError ( List Val, EvalContext )
+seqEval : EvalFn loc -> EvalContext loc -> List (Expr loc) -> Result (EvalError loc) ( List (Val loc), EvalContext loc )
 seqEval eval ctx exprs =
     case exprs of
         [] ->
@@ -142,7 +150,13 @@ seqEval eval ctx exprs =
                     Err err
 
 
-callFnByName : EvalFn -> EvalContext -> Pos -> String -> List Expr -> Result EvalError ( Val, EvalContext )
+callFnByName :
+    EvalFn loc
+    -> EvalContext loc
+    -> TextPos
+    -> String
+    -> List (Expr loc)
+    -> Result (EvalError loc) ( Val loc, EvalContext loc )
 callFnByName eval (EvalContext ctx) pos funName argExprs =
     case Dict.get funName ctx.names of
         Just fun ->
@@ -152,7 +166,13 @@ callFnByName eval (EvalContext ctx) pos funName argExprs =
             Err <| UnknownName (posDebug pos) funName
 
 
-callFnByValue : EvalFn -> EvalContext -> Pos -> Val -> List Expr -> Result EvalError ( Val, EvalContext )
+callFnByValue :
+    EvalFn loc
+    -> EvalContext loc
+    -> TextPos
+    -> Val loc
+    -> List (Expr loc)
+    -> Result (EvalError loc) ( Val loc, EvalContext loc )
 callFnByValue eval (EvalContext ctx) pos fun argExprs =
     case fun of
         StrVal debug s ->
@@ -179,7 +199,7 @@ callFnByValue eval (EvalContext ctx) pos fun argExprs =
             Err <| TypeMismatch (debugInfo val) "I only know how to call functions"
 
 
-evalInContext : EvalFn
+evalInContext : EvalFn loc
 evalInContext (EvalContext ctx) expr =
     case expr of
         StrE pos str ->
@@ -202,26 +222,26 @@ evalInContext (EvalContext ctx) expr =
 -- TODO: extract this into a separate module
 
 
-type alias Args =
-    ( List Val, DebugInfo, Int )
+type alias Args loc =
+    ( List (Val loc), DebugInfo loc, Int )
 
 
-type ArgReaderError
-    = ArTooManyArgs ( Val, List Val )
+type ArgReaderError loc
+    = ArTooManyArgs ( Val loc, List (Val loc) )
     | ArTooFewArgs Int
     | ArWrongArgType Int { expected : String }
 
 
-type alias ArgReader r =
-    Args -> Result ArgReaderError ( r, List Val, Int )
+type alias ArgReader r loc =
+    Args loc -> Result (ArgReaderError loc) ( r, List (Val loc), Int )
 
 
-arConst : a -> ArgReader a
+arConst : a -> ArgReader a loc
 arConst a ( args, cs, n ) =
     Ok ( a, args, 1 )
 
 
-arThen : (a -> ArgReader b) -> ArgReader a -> ArgReader b
+arThen : (a -> ArgReader b loc) -> ArgReader a loc -> ArgReader b loc
 arThen fn ra =
     \( args, cs, n ) ->
         ra ( args, cs, n )
@@ -229,17 +249,17 @@ arThen fn ra =
             |> Result.mapError bumpArgPos
 
 
-arMap : (a -> b) -> ArgReader a -> ArgReader b
+arMap : (a -> b) -> ArgReader a loc -> ArgReader b loc
 arMap fn =
     arThen (fn >> arConst)
 
 
-arAnd : ArgReader a -> ArgReader (a -> b) -> ArgReader b
+arAnd : ArgReader a loc -> ArgReader (a -> b) loc -> ArgReader b loc
 arAnd ra rab =
     rab |> arThen (\f -> ra |> arMap f)
 
 
-bumpArgPos : ArgReaderError -> ArgReaderError
+bumpArgPos : ArgReaderError loc -> ArgReaderError loc
 bumpArgPos err =
     case err of
         ArWrongArgType pos details ->
@@ -249,11 +269,11 @@ bumpArgPos err =
             other
 
 
-type alias ReadOne a =
-    Val -> Result (Int -> ArgReaderError) a
+type alias ReadOne a loc =
+    Val loc -> Result (Int -> ArgReaderError loc) a
 
 
-arChomp : ReadOne a -> ArgReader a
+arChomp : ReadOne a loc -> ArgReader a loc
 arChomp read =
     \( args, _, n ) ->
         case args of
@@ -266,7 +286,7 @@ arChomp read =
                 Err (ArTooFewArgs n)
 
 
-arRest : ReadOne a -> ArgReader (List a)
+arRest : ReadOne a loc -> ArgReader (List a) loc
 arRest read =
     \( args, cs, n ) ->
         case args of
@@ -283,7 +303,7 @@ arRest read =
                 Ok ( [], [], n )
 
 
-aStr : ReadOne String
+aStr : ReadOne String loc
 aStr arg =
     case arg of
         StrVal _ s ->
@@ -293,7 +313,7 @@ aStr arg =
             Err (\n -> ArWrongArgType n { expected = "a string" })
 
 
-aVis : ReadOne Vis
+aVis : ReadOne Vis loc
 aVis arg =
     case arg of
         StrVal _ s ->
@@ -306,7 +326,7 @@ aVis arg =
             Err (\n -> ArWrongArgType n { expected = "a block or inline element" })
 
 
-aBlock : ReadOne Block
+aBlock : ReadOne Block loc
 aBlock arg =
     case arg of
         VisVal _ (BlockVis v) ->
@@ -316,7 +336,7 @@ aBlock arg =
             Err (\n -> ArWrongArgType n { expected = "a block element" })
 
 
-anInline : ReadOne Inline
+anInline : ReadOne Inline loc
 anInline arg =
     case arg of
         StrVal _ s ->
@@ -329,12 +349,12 @@ anInline arg =
             Err (\n -> ArWrongArgType n { expected = "an inline element" })
 
 
-getCallSite : ArgReader DebugInfo
+getCallSite : ArgReader (DebugInfo loc) loc
 getCallSite ( args, cs, n ) =
     Ok ( cs, args, n )
 
 
-mapArError : DebugInfo -> ArgReaderError -> EvalError
+mapArError : DebugInfo loc -> ArgReaderError loc -> EvalError loc
 mapArError cs are =
     case are of
         ArTooFewArgs n ->
@@ -347,7 +367,7 @@ mapArError cs are =
             TypeMismatch cs ("In argument " ++ String.fromInt argNum ++ ": expected " ++ expected)
 
 
-arConsume : ArgReader a -> ArgReader a
+arConsume : ArgReader a loc -> ArgReader a loc
 arConsume ra =
     \( args, cs, n ) ->
         case ra ( args, cs, n ) of
@@ -361,7 +381,7 @@ arConsume ra =
                 Err other
 
 
-buildFn : String -> ArgReader Val -> Val
+buildFn : String -> ArgReader (Val loc) loc -> Val loc
 buildFn name reader =
     FnVal
         (builtinDebug name)
@@ -376,7 +396,7 @@ buildFn name reader =
 -- Some higher-level helpers
 
 
-manyBlockFun : String -> (List Vis -> Block) -> Val
+manyBlockFun : String -> (List Vis -> Block) -> Val loc
 manyBlockFun name build =
     buildFn name
         (arConst (\cs vs -> VisVal cs (BlockVis <| build vs))
@@ -385,7 +405,7 @@ manyBlockFun name build =
         )
 
 
-manyInlineFun : String -> (List Inline -> Inline) -> Val
+manyInlineFun : String -> (List Inline -> Inline) -> Val loc
 manyInlineFun name build =
     buildFn name
         (arConst (\cs vs -> VisVal cs (InlineVis <| build vs))
@@ -394,7 +414,7 @@ manyInlineFun name build =
         )
 
 
-defaultCtx : EvalContext
+defaultCtx : EvalContext loc
 defaultCtx =
     EvalContext
         { names =
@@ -597,7 +617,7 @@ defaultCtx =
                   )
                 , ( "fun"
                   , let
-                        parseArg : Expr -> Result EvalError String
+                        parseArg : Expr loc -> Result (EvalError loc) String
                         parseArg expr =
                             case expr of
                                 NameE pos name ->
@@ -610,7 +630,7 @@ defaultCtx =
                                 other ->
                                     Err (MacroError (InExpr <| LangParser.exprPos other) "Expected an argument name like %foo")
 
-                        parseArgs : List Expr -> Result EvalError (List String)
+                        parseArgs : List (Expr loc) -> Result (EvalError loc) (List String)
                         parseArgs exprs =
                             case exprs of
                                 e :: es ->
@@ -657,7 +677,7 @@ defaultCtx =
         }
 
 
-evalWithReplacements : Dict String Val -> EvalFn
+evalWithReplacements : Dict String (Val loc) -> EvalFn loc
 evalWithReplacements vars ctx expr =
     case expr of
         NameE _ name ->
