@@ -478,7 +478,7 @@ defaultCtx =
                         )
                   )
                 , ( "comment"
-                  , FnVal
+                  , MacroFnVal
                         (builtinDebug "comment")
                         (\ctx cs _ -> Ok ( VisVal cs NoneV, ctx ))
                   )
