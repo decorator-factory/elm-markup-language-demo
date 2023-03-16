@@ -4,12 +4,13 @@ module Editor.Ui exposing
     , colorMainDark
     , colorMainLight
     , colorMainLighter
+    , colorTextNode
     , sizeL
     , sizeLx
     , sizeM
     , sizeMs
     , sizeS
-    , sizeX
+    , sizeX, colorIdentifierNode, colorIdentifierNodeDark, colorTextNodeDark, colorMainInset, backShadeDarkStronger
     )
 
 import Element as E
@@ -108,9 +109,35 @@ colorMain =
     hsl 220 90 56
 
 
+colorMainInset : E.Color
+colorMainInset =
+    hsl 220 85 65
+
+
+
 colorMainDark : E.Color
 colorMainDark =
     hsl 236 77 33
+
+
+colorTextNode : E.Color
+colorTextNode =
+    hsl 240 0 27
+
+
+colorTextNodeDark : E.Color
+colorTextNodeDark =
+    hsl 240 0 10
+
+
+colorIdentifierNode : E.Color
+colorIdentifierNode =
+    hsl 27 85 35
+
+
+colorIdentifierNodeDark : E.Color
+colorIdentifierNodeDark =
+    hsl 27 70 15
 
 
 backShadeDark : E.Attr decorative msg
@@ -120,6 +147,16 @@ backShadeDark =
         , size = 1
         , blur = 2
         , color = hsla 236 77 33 0.2
+        }
+
+
+backShadeDarkStronger : E.Attr decorative msg
+backShadeDarkStronger =
+    Border.shadow
+        { offset = ( 0, 0 )
+        , size = 1
+        , blur = 4
+        , color = hsla 236 77 10 0.5
         }
 
 

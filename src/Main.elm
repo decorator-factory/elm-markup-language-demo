@@ -12,17 +12,18 @@ import LangParser
 import Parser
 
 
-type alias Val = I.Val LangParser.TextPos
+type alias Val =
+    I.Val LangParser.TextPos
 
 
 type alias Model =
-    { draft : String, tokens : String, result : Result String Val }
+    { draft : String, tokens : String, result : Result String Val, parsed : Result String (LangParser.Expr ()) }
 
 
 main : Program () Model String
 main =
     Browser.sandbox
-        { init = { draft = "", tokens = "", result = Err "Type the code above!" }
+        { init = { draft = "", tokens = "", result = Err "Type the code above!", parsed = Err "Nothing yet" }
         , view = view >> E.layout [ E.width E.fill ]
         , update = update
         }
@@ -49,6 +50,10 @@ update msg model =
 
                 Ok (Err e) ->
                     Err (Debug.toString e)
+        , parsed =
+            expr
+                |> Result.map (LangParser.mapLoc (always ()))
+                |> Result.mapError Debug.toString
     }
 
 
@@ -259,7 +264,7 @@ viewVis vis =
 
 
 view : Model -> E.Element String
-view { draft, result } =
+view { draft, result, parsed } =
     E.column [ E.padding 32, E.spacing 16, E.width E.fill ]
         [ Input.multiline
             [ E.width E.fill
@@ -272,6 +277,12 @@ view { draft, result } =
             , spellcheck = False
             }
         , result |> unwrapVal |> viewVal
+        , case parsed of
+            Ok p ->
+                E.paragraph [E.width (E.px 600)] [E.text (Debug.toString p)]
+
+            Err _ ->
+                E.none
         ]
 
 

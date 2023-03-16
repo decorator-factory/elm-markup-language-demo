@@ -3,12 +3,14 @@ module LangParser exposing
     , TextPos
     , Token(..)
     , consumeExpr
+    , exprPos
+    , mapLoc
     , oneExpr
     , posRepr
     , program
     , sourceLineP
     , tokenize
-    , zeroPos, exprPos
+    , zeroPos
     )
 
 import Json.Encode as Je
@@ -26,12 +28,30 @@ type Expr loc
     | CallE loc String (List (Expr loc))
 
 
+mapLoc : (a -> b) -> Expr a -> Expr b
+mapLoc fn expr =
+    case expr of
+        StrE loc s ->
+            StrE (fn loc) s
+
+        NameE loc name ->
+            NameE (fn loc) name
+
+        CallE loc name args ->
+            CallE (fn loc) name (List.map (mapLoc fn) args)
+
+
 exprPos : Expr loc -> loc
 exprPos expr =
     case expr of
-        StrE pos _ -> pos
-        NameE pos _ -> pos
-        CallE pos _ _ -> pos
+        StrE pos _ ->
+            pos
+
+        NameE pos _ ->
+            pos
+
+        CallE pos _ _ ->
+            pos
 
 
 type Token
