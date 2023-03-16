@@ -39,7 +39,7 @@ Some vague properties that I'd like the language to eventually have:
 
 The project is in its early infancy, but it seems to kinda work.
 
-1. Copy the sample markup from `./sample.markup` in the root of this repository
+1. Copy the sample markup from `./examples/sample.markup` in the root of this repository
 2. Go to https://decorator-factory.github.io/elm-markup-language-demo
 3. Paste the sample markup into the code editor
 4. Scroll down to see the rendered page
@@ -163,7 +163,7 @@ You may want to use the `cc` function in this case.
 > Currently the same as `italic
 
 #### `(aside ...vis) -> block`
-A note displayed to the side. See `sample.markup for an example.
+A note displayed to the side. See `examples/sample.markup for an example.
 
 #### `(anchor string block) -> block`
 Define a place you can jump to using a `link`.
